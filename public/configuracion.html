@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/image.png" type="image/x-icon">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://kit.fontawesome.com/f2a2ff038b.js" crossorigin="anonymous"></script>
+    <title>TuTattoo - Configuración</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/configuracion.css">
+</head>
+<body>
+    <header id="encabezado">
+        <a href="index.html"><img src="img/image.png" class="logo" alt="" /></a>
+        <input type="checkbox" id="menu" />
+        <label for="menu">
+            <img src="img/menu.png" class="menu-icon" alt="" />
+        </label>
+        <ul class="menu">
+            <li class="item"><a href="index.html">Inicio</a></li>
+            <li class="item" id="item-solicitudes" style="display: none;"><a href="admin-solicitudes.html">Solicitudes de Verificación</a></li>
+            <li class="item"><a href="publicaciones.html">Publicaciones</a></li>
+            <li class="item"><a href="locales.html">Locales</a></li>
+            <li class="btn" style="position: relative;">
+                <a href="login.html">Iniciar Sesión</a>
+            </li>
+        </ul>
+        <div class="opciones-usuario">
+            <button id="btn-perfil">Perfil</button>
+            <button id="btn-publicar">Publicar</button>
+            <button id="btn-configuracion">Configuración</button>
+            <button id="btn-salir">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="contenedor">
+        <div class="perfil-header">
+            <div class="imagen-perfil">
+                <img id="imagen-perfil" src="https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=300" alt="Foto de perfil">
+                <div class="cambiar-imagen">
+                    <input type="file" id="input-imagen" accept="image/*" style="display: none;">
+                    <button type="button" id="btn-cambiar-imagen">Cambiar foto</button>
+                </div>
+            </div>
+            <div class="info-perfil">
+                <h1>Configuración de Perfil</h1>
+                <div class="estado-cuenta">
+                    <p>Rol: <span id="rol-usuario">Usuario</span></p>
+                    <p>Estado: <span id="estado-verificacion">No verificado</span></p>
+                    <button id="btn-verificacion" class="btn-verificacion">Solicitar verificación</button>
+                    <button id="btn-agregar-local" class="btn-verificacion" style="display:none; margin-left:10px;">Agregar local</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="formulario-configuracion">
+            <div class="input-box">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="input-box">
+                <label for="correo">Correo electrónico</label>
+                <input type="email" id="correo" name="correo" readonly>
+            </div>
+            <div class="input-box descripcion-box">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+            </div>
+            <div class="input-box">
+                <label for="instagram">Instagram</label>
+                <input type="text" id="instagram" name="instagram">
+            </div>
+            <div class="input-box">
+                <label for="tiktok">TikTok</label>
+                <input type="text" id="tiktok" name="tiktok">
+            </div>
+            <div class="input-box">
+                <label for="youtube">YouTube</label>
+                <input type="text" id="youtube" name="youtube">
+            </div>
+            <div class="input-box">
+                <label for="twitter">Twitter</label>
+                <input type="text" id="twitter" name="twitter">
+            </div>
+            <button type="submit" class="btn">Guardar cambios</button>
+        </form>
+
+        <button id="btn-eliminar-cuenta" class="btn btn-eliminar" style="background:#ff5252; margin-top:20px;">Eliminar cuenta</button>
+
+        <!-- Sección de solicitudes (solo visible para admin) -->
+        <div id="seccion-solicitudes" class="seccion-solicitudes" style="display: none;">
+            <h2>Solicitudes Pendientes</h2>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="tatuadores">Solicitudes de Tatuadores</button>
+                <button class="tab-btn" data-tab="locales">Solicitudes de Locales</button>
+            </div>
+            <div id="contenido-tatuadores" class="tab-contenido active">
+                <!-- Las solicitudes se cargarán dinámicamente -->
+            </div>
+            <div id="contenido-locales" class="tab-contenido">
+                <!-- Las solicitudes se cargarán dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar local -->
+    <div id="modal-local" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="close" id="cerrar-modal-local">&times;</span>
+        <h2>Agregar Local</h2>
+        <form id="form-local" enctype="multipart/form-data">
+          <div class="input-box">
+            <label for="nombre-local">Nombre del local</label>
+            <input type="text" id="nombre-local" name="nombre" required>
+          </div>
+          <div class="input-box">
+            <label for="direccion-local">Dirección</label>
+            <input type="text" id="direccion-local" name="direccion" required>
+          </div>
+          <div class="input-box">
+            <label for="telefono-local">Teléfono</label>
+            <input type="text" id="telefono-local" name="telefono" required>
+          </div>
+          <div class="input-box">
+            <label for="fachada-local">Imagen de fachada</label>
+            <input type="file" id="fachada-local" name="fachada" accept="image/*" required>
+          </div>
+          <div class="input-box">
+            <label for="interior-local">Imágenes del interior (opcional, puedes seleccionar varias)</label>
+            <input type="file" id="interior-local" name="interior" accept="image/*" multiple>
+            <small class="ayuda-multi">Puedes seleccionar varias imágenes manteniendo presionada Ctrl (o Shift) o arrastrando y soltando archivos aquí.</small>
+          </div>
+          <button type="submit" class="btn">Registrar local</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script src="js/configuracion.js"></script>
+</body>
+</html> 

@@ -1,0 +1,369 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: url("../img/fondo 3.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding-top: 100px; /* Espacio para el header */
+}
+
+.contenedor {
+    width: 800px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .2);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+    color: #FFF;
+    border-radius: 10px;
+    padding: 30px 40px;
+    margin: 20px auto; /* Centrado horizontal */
+}
+
+.perfil-header {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.imagen-perfil {
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+
+.imagen-perfil img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #FFF;
+}
+
+.cambiar-imagen {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cambiar-imagen button {
+    background: none;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.info-perfil {
+    flex: 1;
+}
+
+.info-perfil h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.estado-cuenta {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.estado-cuenta p {
+    margin: 10px 0;
+}
+
+.btn-verificacion {
+    background: #FF2258;
+    color: #FFF;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-verificacion:hover {
+    background: #D90F42;
+}
+
+#formulario-configuracion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.input-box {
+    margin: 0; /* Resetear margen para que el gap del grid lo maneje */
+}
+
+.input-box label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-radius: 5px;
+    background: transparent;
+    color: #FFF;
+    font-size: 16px;
+}
+
+.input-box input:focus {
+    outline: none;
+    border-color: #FF2258;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background: #FF2258;
+    color: #FFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    grid-column: 1 / -1; /* El botón también ocupa todo el ancho */
+}
+
+.btn:hover {
+    background: #D90F42;
+}
+
+/* Estilos para la sección de solicitudes */
+.seccion-solicitudes {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: 2px solid #FF2258;
+    color: #FFF;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: #FF2258;
+}
+
+.tab-contenido {
+    display: none;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.tab-contenido.active {
+    display: block;
+}
+
+/* Estilos para las solicitudes */
+.solicitud {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.solicitud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.solicitud-acciones {
+    display: flex;
+    gap: 10px;
+}
+
+.solicitud-acciones button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-aprobar {
+    background: #4CAF50;
+    color: #FFF;
+}
+
+.btn-rechazar {
+    background: #f44336;
+    color: #FFF;
+}
+
+/* Ajustes para el campo de descripción */
+.descripcion-box {
+    grid-column: 1 / -1; /* Ocupa todo el ancho si se usa grid */
+    width: 100%;
+}
+
+.input-box textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-radius: 5px;
+    background: transparent;
+    color: #FFF;
+    font-size: 16px;
+    font-family: "Poppins", sans-serif;
+    resize: vertical; /* Permite redimensionar verticalmente */
+}
+
+.input-box textarea:focus {
+    outline: none;
+    border-color: #FF2258;
+}
+
+/* Modal para agregar local */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 9999 !important;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+  pointer-events: auto !important;
+}
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 10px;
+  position: relative;
+  pointer-events: auto !important;
+}
+.close {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+#form-local .input-box {
+  margin-bottom: 15px;
+}
+#form-local label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+#form-local input[type="text"],
+#form-local input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+#form-local .btn {
+  width: 100%;
+  padding: 10px;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+#form-local .btn:hover {
+  background: #444;
+}
+
+/* Moderno rojo y negro para campos del modal de local */
+#form-local .input-box input[type="text"],
+#form-local .input-box input[type="tel"],
+#form-local .input-box textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  background: rgba(0,0,0,0.85);
+  color: #FFF;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#form-local .input-box input[type="text"]:focus,
+#form-local .input-box input[type="tel"]:focus,
+#form-local .input-box textarea:focus {
+  outline: none;
+  border-color: #FF2258;
+  box-shadow: 0 0 0 2px #FF225880;
+}
+
+#form-local input[type="file"] {
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  padding: 8px;
+}
+#form-local input[type="file"]:focus {
+  border-color: #FF2258;
+}
+#form-local input[type="file"]::file-selector-button {
+  background: #FF2258;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+#form-local input[type="file"]::file-selector-button:hover {
+  background: #D90F42;
+}
+
+body.modal-abierto {
+  overflow: hidden;
+}
+
+.ayuda-multi {
+  display: block;
+  color: #FF2258;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+} 

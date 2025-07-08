@@ -1,0 +1,2 @@
+ALTER TABLE usuarios
+ADD COLUMN imagen_perfil VARCHAR(255) DEFAULT NULL; 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/image.png" type="image/x-icon">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>TuTattoo - Inicio de Sesión</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="contenedor">
+        <form id="formulario-login" action="">
+            <h1>Iniciar Sesión</h1>
+            <div class="input-box">
+                <input type="email" id="correo" placeholder="Email" required>
+                <i class='bx bxs-envelope'></i>
+            </div>
+            <div class="input-box">
+                <input type="password" id="contrasena" placeholder="Password" required>
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+            <button type="submit" class="btn">Iniciar Sesión</button>
+            <div class="enlace-registro">
+                <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+            </div>
+            <!-- Botón de Google Login -->
+            <div class="google-login-box">
+                <a href="#" id="google-login-btn" class="google-btn">
+                    <i class='bx bxl-google'></i>
+                    Iniciar Sesión con Google
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="js/login.js"></script>
+</body>
+</html>

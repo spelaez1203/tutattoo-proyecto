@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Tutattoo</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Bienvenido a tu Dashboard</h1>
+            <nav>
+                <button id="logoutBtn">Cerrar Sesión</button>
+            </nav>
+        </header>
+        <main>
+            <div id="userInfo">
+                <h2>Información del Usuario</h2>
+                <div id="userProfile">
+                    <!-- La información del usuario se cargará aquí dinámicamente -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Verificar el estado de autenticación
+        fetch('/auth/status', {
+            credentials: 'include'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.isAuthenticated) {
+                    window.location.href = '/login.html';
+                } else {
+                    // Mostrar información del usuario
+                    const userProfile = document.getElementById('userProfile');
+                    userProfile.innerHTML = `
+                        <p>Nombre: ${data.user.nombre}</p>
+                        <p>Email: ${data.user.correo}</p>
+                        <img src="${data.user.imagen_perfil}" alt="Foto de perfil" style="width: 100px; height: 100px; border-radius: 50%;">
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.location.href = '/login.html';
+            });
+
+        // Manejar el cierre de sesión
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            window.location.href = '/auth/logout';
+        });
+    </script>
+</body>
+</html> 

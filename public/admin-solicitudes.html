@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/image.png" type="image/x-icon">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://kit.fontawesome.com/f2a2ff038b.js" crossorigin="anonymous"></script>
+    <title>TuTattoo - Gestión de Solicitudes</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/admin-solicitudes.css">
+</head>
+<body>
+    <header id="encabezado">
+        <a href="index.html"><img src="img/image.png" class="logo" alt="" /></a>
+        <input type="checkbox" id="menu" />
+        <label for="menu">
+            <img src="img/menu.png" class="menu-icon" alt="" />
+        </label>
+        <ul class="menu">
+            <li class="item"><a href="index.html">Inicio</a></li>
+            <li class="item" id="item-solicitudes" style="display: none;"><a href="admin-solicitudes.html">Solicitudes de Verificación</a></li>
+            <li class="item"><a href="publicaciones.html">Publicaciones</a></li>
+            <li class="item"><a href="#">Local</a></li>
+            <li class="btn" style="position: relative;">
+                <a href="login.html">Iniciar Sesión</a>
+              
+            </li>
+        </ul>
+          <div class="opciones-usuario">
+                    <button id="btn-perfil">Perfil</button>
+                    <button id="btn-publicar">Publicar</button>
+                    <button id="btn-configuracion">Configuración</button>
+                    <button id="btn-salir">Cerrar Sesión</button>
+                </div>
+    </header>
+
+    <div class="contenedor">
+        <h1>Gestión de Solicitudes de Verificación</h1>
+        
+        <div class="filtros">
+            <div class="input-box">
+                <label for="filtro-estado">Filtrar por estado:</label>
+                <select id="filtro-estado">
+                    <option value="todos">Todos</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="aprobada">Aprobadas</option>
+                    <option value="rechazada">Rechazadas</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label for="filtro-nombre">Buscar por nombre:</label>
+                <input type="text" id="filtro-nombre" placeholder="Nombre del solicitante...">
+            </div>
+        </div>
+
+        <div class="solicitudes-container">
+            <!-- Las solicitudes se cargarán aquí dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Modal de detalles -->
+    <div id="modal-detalles" class="modal">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <div class="detalles-solicitud">
+                <!-- Los detalles se cargarán aquí dinámicamente -->
+            </div>
+            <div class="acciones-solicitud">
+                <textarea id="comentario-admin" placeholder="Escribe un comentario..."></textarea>
+                <div class="botones-accion">
+                    <button id="btn-aprobar" class="btn btn-aprobar">Aprobar</button>
+                    <button id="btn-rechazar" class="btn btn-rechazar">Rechazar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script src="js/admin-solicitudes.js"></script>
+</body>
+</html> 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locales - TuTattoo</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/locales.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <header id="encabezado">
+        <a href="index.html"><img src="img/image.png" class="logo" alt="" /></a>
+        <input type="checkbox" id="menu" />
+        <label for="menu">
+            <img src="img/menu.png" class="menu-icon" alt="" />
+        </label>
+        <ul class="menu">
+            <li class="item"><a href="index.html">Inicio</a></li>
+            <li class="item" id="item-solicitudes" style="display: none;"><a href="admin-solicitudes.html">Solicitudes de Verificación</a></li>
+            <li class="item"><a href="publicaciones.html">Publicaciones</a></li>
+            <li class="item"><a href="locales.html" class="active">Locales</a></li>
+            <li class="btn"><a href="login.html">Iniciar Sesión</a></li>
+        </ul>
+        <div id="nombre-usuario">Iniciar sesión</div>
+        <div class="opciones-usuario">
+            <button id="btn-perfil">Perfil</button>
+            <button id="btn-publicar">Publicar</button>
+            <button id="btn-configuracion">Configuración</button>
+            <button id="btn-salir">Cerrar Sesión</button>
+        </div>
+    </header>
+    <div class="locales-container">
+        <div class="locales-header">
+            <h1>Locales de Tatuadores</h1>
+            <p>Descubre los mejores estudios y locales de tatuadores verificados</p>
+        </div>
+        <div id="lista-locales">
+            <!-- Aquí se mostrarán los locales -->
+        </div>
+    </div>
+    <!-- Modal para detalle del local -->
+    <div id="modal-local-detalle" class="modal">
+      <div class="modal-content" id="modal-local-content">
+        <span class="close" id="cerrar-modal-local-detalle">&times;</span>
+        <!-- Detalle del local -->
+      </div>
+    </div>
+    <script src="js/index.js"></script>
+    <script src="js/locales.js"></script>
+</body>
+</html> 

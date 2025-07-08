@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Tatuaje - Tutattoo</title>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/publicar.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/f2a2ff038b.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header id="encabezado">
+        <a href="index.html"><img src="img/image.png" class="logo" alt="" /></a>
+        <input type="checkbox" id="menu" />
+        <label for="menu">
+            <img src="img/menu.png" class="menu-icon" alt="" />
+        </label>
+        <ul class="menu">
+            <li class="item"><a href="index.html">Inicio</a></li>
+            <li class="item" id="item-solicitudes" style="display: none;"><a href="admin-solicitudes.html">Solicitudes de Verificación</a></li>
+            <li class="item"><a href="publicaciones.html">Publicaciones</a></li>
+            <li class="item"><a href="locales.html">Locales</a></li>
+            <li class="btn" style="position: relative;">
+                <a href="login.html">Iniciar Sesión</a>
+            </li>
+        </ul>
+        <div class="opciones-usuario">
+            <button id="btn-perfil">Perfil</button>
+            <button id="btn-publicar">Publicar</button>
+            <button id="btn-configuracion">Configuración</button>
+            <button id="btn-salir">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Publicar Nuevo Tatuaje</h1>
+        
+        <form id="formPublicar" class="form-publicar">
+            <div class="form-section">
+                <div class="input-box">
+                    <label for="titulo">Título del Tatuaje *</label>
+                    <input type="text" id="titulo" name="titulo" required 
+                           placeholder="Ej: Dragón Japonés Tradicional">
+                </div>
+
+                <div class="input-box">
+                    <label for="descripcion">Descripción *</label>
+                    <textarea id="descripcion" name="descripcion" required 
+                              placeholder="Describe tu tatuaje, técnicas utilizadas, significado, etc."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="imagen-principal">
+                    <label>Imagen Principal *</label>
+                    <div class="upload-area" id="uploadPrincipal">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Arrastra una imagen o haz clic para seleccionar</p>
+                        <input type="file" id="imagenPrincipal" name="imagenPrincipal" 
+                               accept="image/*" required>
+                        <div class="preview-container" id="previewPrincipal"></div>
+                    </div>
+                </div>
+
+                <div class="imagenes-adicionales">
+                    <label>Imágenes Adicionales (Opcional)</label>
+                    <div class="upload-area" id="uploadAdicionales">
+                        <i class="fas fa-images"></i>
+                        <p>Arrastra imágenes o haz clic para seleccionar</p>
+                        <input type="file" id="imagenesAdicionales" name="imagenesAdicionales" 
+                               accept="image/*" multiple>
+                        <div class="preview-container" id="previewAdicionales"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Publicar Tatuaje</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script src="js/publicar.js"></script>
+</body>
+</html> 

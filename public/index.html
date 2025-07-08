@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="shortcut icon" href="img/image.png" type="image/x-icon" />
+    <title>TuTatoo - Inicio</title>
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/publicaciones.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/f2a2ff038b.js" crossorigin="anonymous"></script>
+</head>
+<body class="index-page">
+    <header id="encabezado">
+        <a href="index.html"><img src="img/image.png" class="logo" alt="" /></a>
+        <input type="checkbox" id="menu" />
+        <label for="menu">
+            <img src="img/menu.png" class="menu-icon" alt="" />
+        </label>
+        <ul class="menu">
+            <li class="item"><a href="index.html">Inicio</a></li>
+            <li class="item" id="item-solicitudes" style="display: none;"><a href="admin-solicitudes.html">Solicitudes de Verificación</a></li>
+            <li class="item"><a href="publicaciones.html">Publicaciones</a></li>
+            <li class="item"><a href="locales.html">Locales</a></li>
+            <li class="btn"><a href="login.html">Iniciar Sesión</a>
+             
+            </li>
+        </ul>
+        <div id="nombre-usuario">Iniciar sesión</div>
+        <div class="opciones-usuario">
+            <button id="btn-perfil">Perfil</button>
+            <button id="btn-publicar">Publicar</button>
+            <button id="btn-configuracion">Configuración</button>
+            <button id="btn-salir">Cerrar Sesión</button>
+        </div>
+    </header>
+
+    <!-- Sección de publicaciones más votadas de la semana -->
+    <main class="main-content">
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1>Bienvenido a TuTatoo</h1>
+                <p>Descubre los mejores tatuajes de la semana</p>
+            </div>
+        </section>
+
+        <section class="publicaciones-destacadas">
+            <div class="container">
+                <h2>Publicaciones Más Votadas de la Semana</h2>
+                <div id="publicaciones-container" class="publicaciones-grid">
+                    <!-- Las publicaciones se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para detalles de publicaciones -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modal-image" src="" alt="Imagen del tatuaje">
+            <h2 id="modal-name"></h2>
+            <p id="modal-description"></p>
+            <p><strong>Subido por:</strong> <span id="modal-user"></span></p>
+
+            <div id="modal-comments" class="comment-section">
+                <!-- Los comentarios se cargarán aquí -->
+            </div>
+
+            <textarea id="comment" placeholder="Deja un comentario..."></textarea>
+            <div>
+                <label>Calificación:</label>
+                <input type="radio" name="rating" value="1"> 1
+                <input type="radio" name="rating" value="2"> 2
+                <input type="radio" name="rating" value="3"> 3
+                <input type="radio" name="rating" value="4"> 4
+                <input type="radio" name="rating" value="5"> 5
+            </div>
+            <button id="submit-comment">Enviar</button>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+</body>
+</html>

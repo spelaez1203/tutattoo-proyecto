@@ -1,0 +1,236 @@
+/* locales.css */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(40px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0,1)), url("../img/tipos-tatuajes.jpg") !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: fixed !important;
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+}
+
+.locales-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 40px 20px;
+}
+
+.locales-header {
+  text-align: center;
+  margin: 120px 0 40px 0;
+  padding: 2rem 1rem 2.5rem 1rem;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: white;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.18);
+}
+
+.locales-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.18);
+}
+
+.locales-header p {
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+  opacity: 0.93;
+}
+
+#lista-locales {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-content: center;
+  align-items: stretch;
+  margin-top: 30px;
+}
+
+.local-card {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.10);
+  padding: 22px 18px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: none;
+  position: relative;
+  opacity: 0;
+  animation: fadeInUp 0.7s cubic-bezier(.23,1.01,.32,1) forwards;
+  transition: box-shadow 0.22s, transform 0.22s;
+}
+
+.local-card:nth-child(1) { animation-delay: 0.05s; }
+.local-card:nth-child(2) { animation-delay: 0.15s; }
+.local-card:nth-child(3) { animation-delay: 0.25s; }
+.local-card:nth-child(4) { animation-delay: 0.35s; }
+.local-card:nth-child(5) { animation-delay: 0.45s; }
+.local-card:nth-child(6) { animation-delay: 0.55s; }
+
+.local-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(255,34,88,0.13), 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.local-fachada {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(255,34,88,0.10);
+  border: 2px solid #ff225822;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+.local-card:hover .local-fachada {
+  box-shadow: 0 4px 24px rgba(255,34,88,0.18);
+  border: 2px solid #ff2258;
+}
+
+.local-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #222;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.local-card p {
+  margin: 0 0 4px 0;
+  color: #444;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.local-card strong {
+  color: #ff2258;
+}
+
+.btn-ver-detalle {
+  background: linear-gradient(90deg, #ff2258 60%, #d90f42 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 8px;
+  margin-top: 14px;
+  cursor: pointer;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255,34,88,0.10);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  letter-spacing: 1px;
+  outline: none;
+}
+
+.btn-ver-detalle:hover {
+  background: linear-gradient(90deg, #d90f42 60%, #ff2258 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,34,88,0.18);
+  transform: scale(1.06);
+}
+
+.no-locales {
+  text-align: center;
+  color: #fff;
+  font-size: 1.3em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 60px auto;
+  padding: 36px 32px 24px 32px;
+  border-radius: 18px;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.10);
+  border: 2px solid #ff2258;
+}
+
+.close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 2em;
+  color: #ff2258;
+  cursor: pointer;
+  transition: color 0.18s;
+}
+.close:hover {
+  color: #d90f42;
+}
+
+.fachada-modal {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  border: 2px solid #ff2258;
+  box-shadow: 0 2px 12px rgba(255,34,88,0.10);
+}
+
+.img-interior {
+  width: 110px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 7px;
+  border: 2px solid #ffbe76;
+  box-shadow: 0 2px 8px rgba(255,34,88,0.10);
+}
+
+.interiores {
+  margin-top: 18px;
+}
+
+@media (max-width: 900px) {
+  #lista-locales {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .local-card {
+    width: 100%;
+  }
+  .locales-header {
+    margin: 100px 0 30px 0;
+    padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .locales-container {
+    padding: 5px;
+  }
+  .modal-content {
+    padding: 10px;
+  }
+  .fachada-modal {
+    height: 180px;
+    object-fit: cover;
+  }
+  .locales-header {
+    margin: 80px 0 20px 0;
+    padding: 0.7rem 0.2rem 1rem 0.2rem;
+  }
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/image.png" type="image/x-icon">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>TuTattoo - Verificación</title>
+    <link rel="stylesheet" href="css/verificarse.css">
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Solicitud de Verificación</h1>
+        <p class="descripcion">Para verificar tu cuenta como tatuador, necesitamos que proporciones la siguiente información:</p>
+
+        <form id="formulario-verificacion">
+            <div class="input-box">
+                <label for="ciudad">Ciudad donde trabajas</label>
+                <input type="text" id="ciudad" name="ciudad" required>
+            </div>
+
+            <div class="input-box">
+                <label for="hace-domicilio">¿Realizas tatuajes a domicilio?</label>
+                <select id="hace-domicilio" name="hace-domicilio" required>
+                    <option value="1">Sí</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label for="tiene-local">¿Tienes un local establecido?</label>
+                <select id="tiene-local" name="tiene-local" required>
+                    <option value="1">Sí</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
+            <div id="info-local" style="display: none;">
+                <div class="input-box">
+                    <label for="nombre-local">Nombre del local</label>
+                    <input type="text" id="nombre-local" name="nombre-local">
+                </div>
+
+                <div class="input-box">
+                    <label for="direccion">Dirección del local</label>
+                    <input type="text" id="direccion" name="direccion">
+                </div>
+
+                <div class="input-box">
+                    <label for="telefono">Teléfono de contacto</label>
+                    <input type="tel" id="telefono" name="telefono">
+                </div>
+
+                <div class="input-box">
+                    <label for="imagen-fachada">Foto de la fachada del local</label>
+                    <input type="file" id="imagen-fachada" name="imagen-fachada" accept="image/*">
+                </div>
+            </div>
+
+            <div class="input-box">
+                <label for="documentos">Documentos de identidad y certificaciones (PDF)</label>
+                <input type="file" id="documentos" name="documentos" accept=".pdf" multiple required>
+                <small>Sube tus documentos de identidad y certificaciones que acrediten tu experiencia como tatuador.</small>
+            </div>
+
+            <div class="input-box">
+                <label for="portfolio">Portfolio de trabajos (imágenes)</label>
+                <input type="file" id="portfolio" name="portfolio" accept="image/*" multiple required>
+                <small>Sube fotos de tus mejores trabajos para evaluar tu experiencia.</small>
+            </div>
+
+            <button type="submit" class="btn">Enviar solicitud</button>
+        </form>
+    </div>
+
+    <script src="js/verificarse.js"></script>
+</body>
+</html> 

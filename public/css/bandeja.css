@@ -1,0 +1,107 @@
+.bandeja-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #222;
+}
+
+.notificaciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.notificacion {
+  background: #f7f7fa;
+  border-left: 5px solid #4f8cff;
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  transition: background 0.2s;
+}
+
+.notificacion.leida {
+  opacity: 0.6;
+  border-left-color: #bbb;
+}
+
+.notificacion .tipo {
+  font-size: 0.95em;
+  color: #4f8cff;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.notificacion .mensaje {
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.notificacion .fecha {
+  font-size: 0.85em;
+  color: #888;
+  align-self: flex-end;
+}
+
+.notificacion .marcar-leida {
+  align-self: flex-end;
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 6px;
+  transition: background 0.2s;
+}
+
+.notificacion .marcar-leida:hover {
+  background: #3566b8;
+}
+
+/* Campana de notificaciones */
+.notificaciones-campana {
+  position: relative;
+  display: inline-block;
+  margin-left: 18px;
+  cursor: pointer;
+}
+
+.notificaciones-campana .fa-bell {
+  font-size: 1.7em;
+  color: #fff;
+  transition: color 0.2s;
+}
+
+.notificaciones-campana .fa-bell:hover {
+  color: #4f8cff;
+}
+
+.notificaciones-badge {
+  position: absolute;
+  top: -7px;
+  right: -10px;
+  background: #e60026;
+  color: #fff;
+  font-size: 0.95em;
+  font-weight: bold;
+  border-radius: 16px;
+  padding: 2px 7px;
+  min-width: 22px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  z-index: 2;
+  border: 2px solid #111;
+  line-height: 1.2;
+} 
