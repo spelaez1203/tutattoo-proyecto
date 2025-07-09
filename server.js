@@ -2,9 +2,9 @@ const express = require('express')
 const path = require('path')
 const morgan = require('morgan')
 const session = require('express-session')
-const MySQLStore = require('express-mysql-session')(session)
+const pgSession = require('connect-pg-simple')(session)
 const passport = require('./config/passport')
-const db = require('./database/connection') // Importar la conexión a la base de datos
+const pool = require('./database/connection') // Importar la conexión a la base de datos
 const app = express()
 const PORT = process.env.PORT || 3000
 require('dotenv').config()
@@ -80,12 +80,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Configuración de la sesión
-const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'tutattoo_db'
+const sessionStore = new pgSession({
+  pool: pool,
+  tableName: 'sessions'
 })
 
 app.use(session({
@@ -93,7 +90,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'tutattoo_secret_key',
   store: sessionStore,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
     secure: false,

@@ -1,4 +1,4 @@
-const db = require('../db/conexion')
+const pool = require('../database/connection')
 const bcrypt = require('bcrypt')
 
 const iniciarSesion = async (req, res) => {
@@ -7,8 +7,8 @@ const iniciarSesion = async (req, res) => {
 
   try {
     // Buscar usuario por correo
-    const [usuarios] = await db.query(
-      'SELECT * FROM usuarios WHERE correo = ?',
+    const { rows: usuarios } = await pool.query(
+      'SELECT * FROM usuarios WHERE correo = $1',
       [correo]
     )
 
@@ -52,17 +52,17 @@ const iniciarSesion = async (req, res) => {
     // Si es administrador, verificar automáticamente
     if (usuario.rol === 'admin') {
       console.log('Usuario es administrador, verificando automáticamente')
-      await db.query(
-        'UPDATE usuarios SET estado_verificado = 1 WHERE id_usuario = ?',
+      await pool.query(
+        'UPDATE usuarios SET estado_verificado = true WHERE id_usuario = $1',
         [usuario.id_usuario]
       )
-      usuario.estado_verificado = 1
+      usuario.estado_verificado = true
     }
 
     // Si es tatuador, obtener su id_tatuador
     if (usuario.rol === 'tatuador') {
-      const [tatuadores] = await db.query(
-        'SELECT id_tatuador FROM tatuadores WHERE id_usuario = ?',
+      const { rows: tatuadores } = await pool.query(
+        'SELECT id_tatuador FROM tatuadores WHERE id_usuario = $1',
         [usuario.id_usuario]
       )
       if (tatuadores.length > 0) {
