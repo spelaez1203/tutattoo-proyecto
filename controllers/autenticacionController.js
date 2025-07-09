@@ -2,7 +2,7 @@ const pool = require('../database/connection')
 const bcrypt = require('bcrypt')
 
 const iniciarSesion = async (req, res) => {
-  const { correo, contraseña } = req.body
+  const { correo, contrasena } = req.body
   console.log('Intento de inicio de sesión:', { correo })
 
   try {
@@ -38,10 +38,10 @@ const iniciarSesion = async (req, res) => {
 
     // Verificar contraseña
     console.log('Verificando contraseña...')
-    const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña)
-    console.log('Resultado de verificación de contraseña:', contraseñaValida)
+    const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena)
+    console.log('Resultado de verificación de contraseña:', contrasenaValida)
 
-    if (!contraseñaValida) {
+    if (!contrasenaValida) {
       console.log('Contraseña incorrecta')
       return res.status(401).json({
         exito: false,

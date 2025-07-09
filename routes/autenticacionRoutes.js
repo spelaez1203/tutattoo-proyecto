@@ -258,7 +258,7 @@ router.post('/registro', async (req, res) => {
 
     // Insertar en la base de datos
     await pool.query(
-      'INSERT INTO usuarios (nombre, correo, contraseña) VALUES ($1, $2, $3)',
+      'INSERT INTO usuarios (nombre, correo, contrasena) VALUES ($1, $2, $3)',
       [nombre, correo, hash]
     );
 

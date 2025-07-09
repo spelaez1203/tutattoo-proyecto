@@ -117,7 +117,7 @@ passport.use(new LocalStrategy({
       nombre: usuario.nombre,
       correo: usuario.correo,
       tieneGoogleId: !!usuario.googleId,
-      tieneContraseña: !!usuario.contraseña
+      tieneContraseña: !!usuario.contrasena
     })
 
     // Verificar si es un usuario de Google
@@ -127,14 +127,14 @@ passport.use(new LocalStrategy({
     }
 
     // Verificar que el usuario tenga contraseña
-    if (!usuario.contraseña) {
+    if (!usuario.contrasena) {
       console.log('DEBUG: Usuario sin contraseña, probablemente creado por Google');
       return done(null, false, { message: 'Esta cuenta no tiene contraseña. Usa el login con Google.' });
     }
 
     // Verificar contraseña
     console.log('DEBUG: Verificando contraseña...')
-    const contrasenaValida = await bcrypt.compare(contrasena, usuario.contraseña)
+    const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena)
     console.log('DEBUG: Resultado de verificación de contraseña:', contrasenaValida)
 
     if (!contrasenaValida) {

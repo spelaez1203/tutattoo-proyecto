@@ -34,7 +34,7 @@ async function verificarUsuarios () {
       if (nuevaContrasena) {
         const hash = await bcrypt.hash(nuevaContrasena, 10)
         await connection.query(
-          'UPDATE usuarios SET contraseña = ? WHERE id_usuario = ?',
+          'UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?',
           [hash, usuario.id_usuario]
         )
         console.log(`✅ Contraseña actualizada a: ${nuevaContrasena}`)

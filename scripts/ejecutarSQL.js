@@ -39,7 +39,7 @@ async function actualizarTabla () {
       // Crear usuario administrador con contraseña '12345'
       const hash = await bcrypt.hash('12345', 10)
       await connection.query(`
-                INSERT INTO usuarios (nombre, correo, contraseña, rol, estado_verificado)
+                INSERT INTO usuarios (nombre, correo, contrasena, rol, estado_verificado)
                 VALUES (?, ?, ?, ?, ?)
             `, ['Admin Santiago', 'adminsantiago@tutattoo.com', hash, 'admin', 1])
       console.log('Usuario administrador creado exitosamente')
@@ -48,7 +48,7 @@ async function actualizarTabla () {
       const hash = await bcrypt.hash('12345', 10)
       await connection.query(`
                 UPDATE usuarios 
-                SET contraseña = ? 
+                SET contrasena = ? 
                 WHERE correo = ?
             `, [hash, 'adminsantiago@tutattoo.com'])
       console.log('Contraseña del administrador actualizada exitosamente')
