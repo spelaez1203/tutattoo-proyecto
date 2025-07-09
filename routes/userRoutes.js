@@ -31,42 +31,43 @@ router.get('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
   }
 })
 
-// Ruta para actualizar el perfil del usuario
-router.post('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
+// Ruta para actualizar perfil de usuario
+router.put('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
   const { id_usuario } = req.params
   const { nombre, descripcion, instagram, tiktok, youtube, twitter } = req.body
 
-  if (parseInt(req.session.usuario.id_usuario) !== parseInt(id_usuario)) {
-    return res.status(403).json({ exito: false, mensaje: 'No tienes permiso para actualizar este perfil' })
-  }
-
-  let connection
   try {
-    connection = await pool.getConnection()
+    const connection = await pool.getConnection()
     await connection.beginTransaction()
 
-    if (nombre) {
-      await connection.query('UPDATE usuarios SET nombre = ? WHERE id_usuario = ?', [nombre, id_usuario])
+    try {
+      // Actualizar nombre en la tabla usuarios
+      if (nombre) {
+        await connection.query('UPDATE usuarios SET nombre = $1 WHERE id_usuario = $2', [nombre, id_usuario])
+      }
+
+      // Actualizar o insertar en perfil_usuario
+      const { rows: perfilExistente } = await connection.query('SELECT id_perfil FROM perfil_usuario WHERE id_usuario = $1', [id_usuario])
+
+      const perfilData = { descripcion, instagram, tiktok, youtube, twitter }
+
+      if (perfilExistente.length > 0) {
+        await connection.query('UPDATE perfil_usuario SET descripcion = $1, instagram = $2, tiktok = $3, youtube = $4, twitter = $5 WHERE id_usuario = $6', [descripcion, instagram, tiktok, youtube, twitter, id_usuario])
+      } else {
+        await connection.query('INSERT INTO perfil_usuario (id_usuario, descripcion, instagram, tiktok, youtube, twitter) VALUES ($1, $2, $3, $4, $5, $6)', [id_usuario, descripcion, instagram, tiktok, youtube, twitter])
+      }
+
+      await connection.commit()
+      res.json({ exito: true, mensaje: 'Perfil actualizado correctamente' })
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
     }
-
-    const perfilData = { descripcion, instagram, tiktok, youtube, twitter }
-    const [perfilExistente] = await connection.query('SELECT id_perfil FROM perfil_usuario WHERE id_usuario = ?', [id_usuario])
-
-    if (perfilExistente.length > 0) {
-      await connection.query('UPDATE perfil_usuario SET ? WHERE id_usuario = ?', [perfilData, id_usuario])
-    } else {
-      perfilData.id_usuario = id_usuario
-      await connection.query('INSERT INTO perfil_usuario SET ?', [perfilData])
-    }
-
-    await connection.commit()
-    res.json({ exito: true, mensaje: 'Perfil actualizado correctamente' })
   } catch (error) {
-    if (connection) await connection.rollback()
-    console.error('Error al actualizar el perfil:', error)
-    res.status(500).json({ exito: false, mensaje: 'Error interno al actualizar el perfil' })
-  } finally {
-    if (connection) connection.release()
+    console.error('Error al actualizar perfil:', error)
+    res.status(500).json({ exito: false, mensaje: 'Error al actualizar el perfil' })
   }
 })
 
@@ -74,33 +75,34 @@ router.post('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
 router.get('/:id_usuario/tatuador', getIdTatuador)
 
 // Eliminar cuenta de usuario
-router.delete('/:id_usuario/eliminar', verificarAutenticacion, async (req, res) => {
+router.delete('/:id_usuario', verificarAutenticacion, async (req, res) => {
   const { id_usuario } = req.params
-  if (parseInt(req.session.usuario.id_usuario) !== parseInt(id_usuario)) {
-    return res.status(403).json({ exito: false, mensaje: 'No tienes permiso para eliminar esta cuenta' })
-  }
-  let connection
+
   try {
-    connection = await pool.getConnection()
+    const connection = await pool.getConnection()
     await connection.beginTransaction()
 
-    // Eliminar datos relacionados (comentarios, guardados, perfil, etc.)
-    await connection.query('DELETE FROM comentarios_tatuajes WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM guardados WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM perfil_usuario WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM tatuadores WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM citas WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM solicitudes_verificacion WHERE id_usuario = ?', [id_usuario])
-    await connection.query('DELETE FROM usuarios WHERE id_usuario = ?', [id_usuario])
+    try {
+      // Eliminar en orden para respetar las foreign keys
+      await connection.query('DELETE FROM comentarios_tatuajes WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM guardados WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM perfil_usuario WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM tatuadores WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM citas WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM solicitudes_verificacion WHERE id_usuario = $1', [id_usuario])
+      await connection.query('DELETE FROM usuarios WHERE id_usuario = $1', [id_usuario])
 
-    await connection.commit()
-    res.json({ exito: true, mensaje: 'Cuenta eliminada correctamente' })
+      await connection.commit()
+      res.json({ exito: true, mensaje: 'Cuenta eliminada correctamente' })
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
   } catch (error) {
-    if (connection) await connection.rollback()
     console.error('Error al eliminar cuenta:', error)
     res.status(500).json({ exito: false, mensaje: 'Error al eliminar la cuenta' })
-  } finally {
-    if (connection) connection.release()
   }
 })
 

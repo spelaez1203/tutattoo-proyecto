@@ -143,8 +143,8 @@ router.post('/solicitud-verificacion', uploadFields, async (req, res) => {
     console.log('Transacción iniciada.')
 
     // Verificar si el usuario ya tiene una solicitud pendiente o aprobada
-    const [solicitudExistente] = await connection.query(
-      'SELECT id_solicitud FROM solicitudes_verificacion WHERE id_usuario = ? AND estado IN (?, ?)',
+    const { rows: solicitudExistente } = await connection.query(
+      "SELECT id_solicitud FROM solicitudes_verificacion WHERE id_usuario = $1 AND estado IN ($2, $3)",
       [id_usuario, 'pendiente', 'aprobada']
     )
 
@@ -171,12 +171,11 @@ router.post('/solicitud-verificacion', uploadFields, async (req, res) => {
     const documentos = ((req.files && req.files.documentos) || []).map(file => path.relative(uploadDirBase, file.path)).join(',')
     const portfolio = ((req.files && req.files.portfolio) || []).map(file => path.relative(uploadDirBase, file.path)).join(',')
 
-    const [result] = await connection.query(
-      'INSERT INTO solicitudes_verificacion (id_usuario, ciudad, hace_domicilio, tiene_local, nombre_local, direccion, telefono, documentos, portfolio, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    const { rows: result } = await connection.query(
+      'INSERT INTO solicitudes_verificacion (id_usuario, ciudad, hace_domicilio, tiene_local, nombre_local, direccion, telefono, documentos, portfolio, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id_solicitud',
       [id_usuario, ciudad, hace_domicilio === '1', tiene_local === '1', nombre_local || null, direccion || null, telefono || null, documentos || null, portfolio || null, 'pendiente']
     )
-
-    const id_solicitud = result.insertId
+    const id_solicitud = result[0].id_solicitud
     console.log(`Solicitud de verificación insertada con ID: ${id_solicitud}`)
 
     await connection.commit()
@@ -227,8 +226,8 @@ router.get('/estado/:id_usuario', async (req, res) => {
   const db = require('../db/conexion')
   try {
     // Consultar estado general de verificación, si tiene solicitud y el estado de la solicitud
-    const [rows] = await db.query(
-      'SELECT u.estado_verificado, sv.estado as estado_solicitud FROM usuarios u LEFT JOIN solicitudes_verificacion sv ON u.id_usuario = sv.id_usuario WHERE u.id_usuario = ?',
+    const { rows } = await db.query(
+      'SELECT u.estado_verificado, sv.estado as estado_solicitud FROM usuarios u LEFT JOIN solicitudes_verificacion sv ON u.id_usuario = sv.id_usuario WHERE u.id_usuario = $1',
       [id_usuario]
     )
 
@@ -306,8 +305,8 @@ router.post('/actualizar-imagen', (req, res) => {
     const db = require('../db/conexion')
     try {
       // Verificar que el usuario existe
-      const [usuario] = await db.query(
-        'SELECT id_usuario FROM usuarios WHERE id_usuario = ?',
+      const { rows: usuario } = await db.query(
+        'SELECT id_usuario FROM usuarios WHERE id_usuario = $1',
         [id_usuario]
       )
 
@@ -327,19 +326,19 @@ router.post('/actualizar-imagen', (req, res) => {
       console.log('Ruta relativa del archivo:', rutaRelativa)
 
       // Actualizar o insertar en perfil_usuario
-      const [perfilExistente] = await db.query(
-        'SELECT id_perfil FROM perfil_usuario WHERE id_usuario = ?',
+      const { rows: perfilExistente } = await db.query(
+        'SELECT id_perfil FROM perfil_usuario WHERE id_usuario = $1',
         [id_usuario]
       )
 
       if (perfilExistente.length > 0) {
         await db.query(
-          'UPDATE perfil_usuario SET url_imagen = ? WHERE id_usuario = ?',
+          'UPDATE perfil_usuario SET url_imagen = $1 WHERE id_usuario = $2',
           [rutaRelativa, id_usuario]
         )
       } else {
         await db.query(
-          'INSERT INTO perfil_usuario (id_usuario, url_imagen) VALUES (?, ?)',
+          'INSERT INTO perfil_usuario (id_usuario, url_imagen) VALUES ($1, $2)',
           [id_usuario, rutaRelativa]
         )
       }
@@ -379,18 +378,18 @@ router.get('/solicitudes-verificacion', async (req, res) => {
     const params = []
 
     if (estado && estado !== 'todos') {
-      query += ' AND s.estado = ?'
+      query += ' AND s.estado = $1'
       params.push(estado)
     }
 
     if (nombre) {
-      query += ' AND u.nombre LIKE ?'
+      query += ' AND u.nombre LIKE $2'
       params.push(`%${nombre}%`)
     }
 
     query += ' ORDER BY s.fecha_solicitud DESC'
 
-    const [solicitudes] = await db.query(query, params)
+    const { rows: solicitudes } = await db.query(query, params)
 
     // Convertir las cadenas de documentos y portfolio en arrays para cada solicitud
     solicitudes.forEach(solicitud => {
@@ -417,11 +416,11 @@ router.get('/solicitudes-verificacion/:id', async (req, res) => {
   const db = require('../db/conexion')
 
   try {
-    const [solicitudes] = await db.query(`
+    const { rows: solicitudes } = await db.query(`
             SELECT s.*, u.nombre as nombre_usuario, u.correo
             FROM solicitudes_verificacion s
             JOIN usuarios u ON s.id_usuario = u.id_usuario
-            WHERE s.id_solicitud = ?
+            WHERE s.id_solicitud = $1
         `, [id])
 
     if (solicitudes.length === 0) {
@@ -463,8 +462,8 @@ router.post('/solicitudes-verificacion/:id/aprobar', async (req, res) => {
 
     try {
       // Obtener los datos de la solicitud antes de actualizarla
-      const [solicitudes] = await connection.query(
-        'SELECT * FROM solicitudes_verificacion WHERE id_solicitud = ?',
+      const { rows: solicitudes } = await connection.query(
+        'SELECT * FROM solicitudes_verificacion WHERE id_solicitud = $1',
         [id]
       )
 
@@ -479,22 +478,22 @@ router.post('/solicitudes-verificacion/:id/aprobar', async (req, res) => {
                 UPDATE solicitudes_verificacion 
                 SET estado = 'aprobada', 
                     fecha_revision = CURRENT_TIMESTAMP,
-                    comentario_admin = ?
-                WHERE id_solicitud = ?
+                    comentario_admin = $1
+                WHERE id_solicitud = $2
             `, [comentario, id])
 
       // Actualizar rol del usuario a tatuador
       await connection.query(`
                 UPDATE usuarios 
                 SET rol = 'tatuador',
-                    estado_verificado = 1
-                WHERE id_usuario = ?
+                    estado_verificado = true
+                WHERE id_usuario = $1
             `, [solicitud.id_usuario])
 
       // Insertar en la tabla tatuadores
       await connection.query(`
                 INSERT INTO tatuadores (id_usuario, ciudad, hace_domicilio, tiene_local)
-                VALUES (?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4)
             `, [
         solicitud.id_usuario,
         solicitud.ciudad,
@@ -548,13 +547,13 @@ router.post('/solicitudes-verificacion/:id/rechazar', async (req, res) => {
             UPDATE solicitudes_verificacion 
             SET estado = 'rechazada', 
                 fecha_revision = CURRENT_TIMESTAMP,
-                comentario_admin = ?
-            WHERE id_solicitud = ?
+                comentario_admin = $1
+            WHERE id_solicitud = $2
         `, [comentario, id])
 
     // Obtener el id_usuario de la solicitud rechazada
-    const [solicitud] = await db.query(
-      'SELECT id_usuario FROM solicitudes_verificacion WHERE id_solicitud = ?',
+    const { rows: solicitud } = await db.query(
+      'SELECT id_usuario FROM solicitudes_verificacion WHERE id_solicitud = $1',
       [id]
     )
     if (solicitud.length > 0) {
@@ -587,7 +586,7 @@ async function sincronizarTatuadores () {
     await connection.beginTransaction()
 
     // Obtener todos los usuarios con rol tatuador que no están en la tabla tatuadores
-    const [usuarios] = await connection.query(`
+    const { rows: usuarios } = await connection.query(`
             SELECT u.id_usuario, sv.ciudad, sv.hace_domicilio, sv.tiene_local
             FROM usuarios u
             LEFT JOIN tatuadores t ON u.id_usuario = t.id_usuario
@@ -601,7 +600,7 @@ async function sincronizarTatuadores () {
     for (const usuario of usuarios) {
       await connection.query(`
                 INSERT INTO tatuadores (id_usuario, ciudad, hace_domicilio, tiene_local)
-                VALUES (?, ?, ?, ?)
+                VALUES ($1, $2, $3, $4)
             `, [
         usuario.id_usuario,
         usuario.ciudad,

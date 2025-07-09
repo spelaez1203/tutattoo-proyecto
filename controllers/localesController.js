@@ -20,31 +20,21 @@ const upload = multer({ storage })
 
 // Crear local
 const crearLocal = (req, res) => {
-  const { id_tatuador, nombre, direccion, telefono } = req.body
-  if (!req.files || !req.files.fachada) {
-    return res.status(400).json({ exito: false, mensaje: 'La imagen de fachada es obligatoria.' })
-  }
-  const fachada = req.files.fachada[0].filename
-  const imagenesInterior = req.files.interior ? req.files.interior.map(f => f.filename) : []
+  const { nombre, direccion, telefono } = req.body
+  const id_tatuador = req.session.usuario.id_tatuador
 
-  // Insertar local
-  const sql = 'INSERT INTO locales (id_tatuador, nombre, direccion, telefono, imagen_fachada) VALUES (?, ?, ?, ?, ?)'
-  pool.query(sql, [id_tatuador, nombre, direccion, telefono, fachada], (err, result) => {
+  if (!id_tatuador) {
+    return res.status(400).json({ exito: false, mensaje: 'Falta el id_tatuador.' })
+  }
+
+  const sql = 'INSERT INTO locales (id_tatuador, nombre, direccion, telefono, imagen_fachada) VALUES ($1, $2, $3, $4, $5) RETURNING id_local'
+  pool.query(sql, [id_tatuador, nombre, direccion, telefono, req.file ? req.file.filename : null], (err, result) => {
     if (err) {
-      console.error('Error al insertar local:', err)
-      return res.status(500).json({ exito: false, mensaje: 'Error al registrar el local.' })
+      console.error('Error al crear local:', err)
+      return res.status(500).json({ exito: false, mensaje: 'Error al crear el local.' })
     }
-    const id_local = result.insertId
-    // Guardar imágenes de interior si existen
-    if (imagenesInterior.length > 0) {
-      const values = imagenesInterior.map(img => [id_local, img])
-      pool.query('INSERT INTO imagenes_local (id_local, url_imagen) VALUES ?', [values], (err2) => {
-        if (err2) {
-          console.error('Error al guardar imágenes de interior:', err2)
-        }
-      })
-    }
-    res.json({ exito: true, mensaje: 'Local registrado correctamente.' })
+    const id_local = result.rows[0].id_local
+    res.json({ exito: true, mensaje: 'Local creado correctamente', id_local })
   })
 }
 
@@ -54,16 +44,16 @@ const obtenerEstadoLocal = (req, res) => {
   if (!id_tatuador) {
     return res.status(400).json({ exito: false, mensaje: 'Falta el id_tatuador.' })
   }
-  const sql = 'SELECT estado FROM locales WHERE id_tatuador = ? ORDER BY id_local DESC LIMIT 1'
+  const sql = 'SELECT estado FROM locales WHERE id_tatuador = $1 ORDER BY id_local DESC LIMIT 1'
   pool.query(sql, [id_tatuador], (err, results) => {
     if (err) {
       console.error('Error al consultar el estado del local:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al consultar el estado del local.' })
     }
-    if (results.length === 0) {
+    if (results.rows.length === 0) {
       return res.json({ exito: true, estado: null })
     }
-    res.json({ exito: true, estado: results[0].estado })
+    res.json({ exito: true, estado: results.rows[0].estado })
   })
 }
 
@@ -82,7 +72,7 @@ const obtenerSolicitudesLocales = (req, res) => {
       console.error('Error al obtener solicitudes de locales:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener solicitudes de locales.' })
     }
-    res.json({ exito: true, solicitudes: results })
+    res.json({ exito: true, solicitudes: results.rows })
   })
 }
 
@@ -113,13 +103,13 @@ const obtenerImagenesLocal = (req, res) => {
   if (!id_local) {
     return res.status(400).json({ exito: false, mensaje: 'Falta el id_local.' });
   }
-  const sql = 'SELECT url_imagen FROM imagenes_local WHERE id_local = ?';
+  const sql = 'SELECT url_imagen FROM imagenes_local WHERE id_local = $1';
   pool.query(sql, [id_local], (err, results) => {
     if (err) {
       console.error('Error al obtener imágenes del local:', err);
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener imágenes del local.' });
     }
-    res.json({ exito: true, imagenes: results });
+    res.json({ exito: true, imagenes: results.rows });
   });
 };
 
@@ -139,7 +129,7 @@ const obtenerLocalesAprobados = (req, res) => {
       console.error('Error al obtener locales aprobados:', err);
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener locales.' });
     }
-    res.json({ exito: true, locales: results });
+    res.json({ exito: true, locales: results.rows });
   });
 };
 

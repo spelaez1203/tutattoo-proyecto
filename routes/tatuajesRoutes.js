@@ -67,8 +67,8 @@ router.post('/publicar', verificarAutenticacion, verificarRolTatuador, verificar
     // Log de sesión
     console.log('Publicando tatuaje con sesión:', req.session.usuario)
     // Insertar el tatuaje en la tabla principal
-    const [result] = await connection.query(
-      'INSERT INTO tatuajes (id_tatuador, titulo, descripcion, imagen, votos) VALUES (?, ?, ?, ?, 0)',
+    const { rows: result } = await connection.query(
+      'INSERT INTO tatuajes (id_tatuador, titulo, descripcion, imagen, votos) VALUES ($1, $2, $3, $4, 0) RETURNING id_tatuaje',
       [
         req.session.usuario.id_tatuador,
         req.body.titulo,
@@ -76,7 +76,7 @@ router.post('/publicar', verificarAutenticacion, verificarRolTatuador, verificar
         path.relative(process.env.UPLOAD_DIR_BASE || path.join(__dirname, '../imagenes_pagina'), req.files.imagenPrincipal[0].path)
       ]
     )
-    const idTatuaje = result.insertId
+    const idTatuaje = result[0].id_tatuaje
 
     console.log('Archivos adicionales recibidos:', req.files.imagenesAdicionales)
 
@@ -85,7 +85,7 @@ router.post('/publicar', verificarAutenticacion, verificarRolTatuador, verificar
       for (const img of req.files.imagenesAdicionales) {
         console.log('Insertando imagen secundaria:', img.path)
         await connection.query(
-          'INSERT INTO imagenes_tatuaje (id_tatuaje, url_imagen, es_principal) VALUES (?, ?, 0)',
+          'INSERT INTO imagenes_tatuaje (id_tatuaje, url_imagen, es_principal) VALUES ($1, $2, false)',
           [idTatuaje, path.relative(process.env.UPLOAD_DIR_BASE || path.join(__dirname, '../imagenes_pagina'), img.path)]
         )
       }
@@ -131,8 +131,8 @@ router.get('/verificar-estado', verificarAutenticacion, verificarRolTatuador, as
 
   try {
     // Verificar si ya existe en la tabla tatuadores
-    const [tatuadores] = await pool.query(
-      'SELECT id_tatuador FROM tatuadores WHERE id_usuario = ?',
+    const { rows: tatuadores } = await pool.query(
+      'SELECT id_tatuador FROM tatuadores WHERE id_usuario = $1',
       [req.session.usuario.id_usuario]
     )
 
@@ -168,8 +168,8 @@ router.get('/verificar-estado', verificarAutenticacion, verificarRolTatuador, as
     }
 
     // Si no existe, verificar si tiene una solicitud aprobada
-    const [solicitudes] = await pool.query(
-      'SELECT * FROM solicitudes_verificacion WHERE id_usuario = ? AND estado = "aprobada"',
+    const { rows: solicitudes } = await pool.query(
+      "SELECT * FROM solicitudes_verificacion WHERE id_usuario = $1 AND estado = 'aprobada'",
       [req.session.usuario.id_usuario]
     )
 
@@ -184,8 +184,8 @@ router.get('/verificar-estado', verificarAutenticacion, verificarRolTatuador, as
 
     // Si tiene solicitud aprobada, crear el registro en tatuadores
     const solicitud = solicitudes[0]
-    const [result] = await pool.query(
-      'INSERT INTO tatuadores (id_usuario, ciudad, hace_domicilio, tiene_local) VALUES (?, ?, ?, ?)',
+    const { rows: result } = await pool.query(
+      'INSERT INTO tatuadores (id_usuario, ciudad, hace_domicilio, tiene_local) VALUES ($1, $2, $3, $4) RETURNING id_tatuador',
       [
         req.session.usuario.id_usuario,
         solicitud.ciudad,
@@ -195,7 +195,7 @@ router.get('/verificar-estado', verificarAutenticacion, verificarRolTatuador, as
     )
 
     // Actualizar la sesión con el nuevo id_tatuador
-    req.session.usuario.id_tatuador = result.insertId
+    req.session.usuario.id_tatuador = result[0].id_tatuador
 
     // Guardar la sesión explícitamente
     await new Promise((resolve, reject) => {
@@ -218,7 +218,7 @@ router.get('/verificar-estado', verificarAutenticacion, verificarRolTatuador, as
     res.json({
       exito: true,
       mensaje: 'Tatuador sincronizado correctamente',
-      id_tatuador: result.insertId
+      id_tatuador: result[0].id_tatuador
     })
   } catch (error) {
     console.error('Error al verificar estado del tatuador:', error)
@@ -248,12 +248,12 @@ router.get('/publicaciones', verificarAutenticacion, verificarRolTatuador, verif
       })
     }
 
-    const [publicaciones] = await pool.query(
+    const { rows: publicaciones } = await pool.query(
             `SELECT 
                 t.id_tatuaje, 
                 t.titulo, 
                 t.descripcion, 
-                CONCAT('/uploads/', REPLACE(t.imagen, '\\\\', '/')) AS imagen_url,
+                '/uploads/' || replace(t.imagen, '\\', '/') AS imagen_url,
                 u.nombre AS nombre_tatuador,
                 COALESCE(v.promedio_votos, 0) AS promedio_votos,
                 COALESCE(g.total_guardados, 0) AS total_guardados,
@@ -277,7 +277,7 @@ router.get('/publicaciones', verificarAutenticacion, verificarRolTatuador, verif
                 FROM comentarios_tatuajes
                 GROUP BY id_tatuaje
             ) cm ON t.id_tatuaje = cm.id_tatuaje
-            WHERE t.id_tatuador = ?
+            WHERE t.id_tatuador = $1
             ORDER BY t.fecha_subida DESC`,
             [sessionInfo.id_tatuador]
     )
@@ -352,7 +352,7 @@ router.get('/mis-tatuajes', verificarAutenticacion, verificarRolTatuador, async 
 
     const query = `
             SELECT t.id_tatuaje, t.id_tatuador, t.titulo, t.descripcion, t.fecha_subida, 
-                   CONCAT('/uploads/', REPLACE(t.imagen, '\\', '/')) as imagen_url, 
+                   '/uploads/' || replace(t.imagen, '\\', '/') as imagen_url, 
                    u.nombre as nombre_tatuador,
                    -- Calcular promedio real de puntuaciones de comentarios
                    COALESCE(AVG(ct.puntuacion), 0) as promedio_votos,
@@ -364,28 +364,18 @@ router.get('/mis-tatuajes', verificarAutenticacion, verificarRolTatuador, async 
             JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador 
             JOIN usuarios u ON ta.id_usuario = u.id_usuario 
             LEFT JOIN comentarios_tatuajes ct ON t.id_tatuaje = ct.id_tatuaje
-            WHERE t.id_tatuador = ? 
+            WHERE t.id_tatuador = $1 
             GROUP BY t.id_tatuaje, t.id_tatuador, t.titulo, t.descripcion, t.fecha_subida, t.imagen, u.nombre
             ORDER BY t.fecha_subida DESC
         `
     console.log('Ejecutando query:', query, 'con parámetros:', [sessionInfo.id_tatuador])
 
-    const [tatuajes] = await pool.query(query, [sessionInfo.id_tatuador])
+    const { rows: tatuajes } = await pool.query(query, [sessionInfo.id_tatuador])
     console.log('Tatuajes encontrados:', tatuajes)
     res.json(tatuajes)
   } catch (error) {
-    console.error('Error detallado al obtener mis tatuajes:', {
-      error: error.message,
-      sqlMessage: error.sqlMessage,
-      sqlState: error.sqlState,
-      errno: error.errno,
-      sql: error.sql
-    })
-    res.status(500).json({
-      mensaje: 'Error al obtener mis tatuajes',
-      error: error.message,
-      sqlMessage: error.sqlMessage
-    })
+    console.error('Error al obtener mis tatuajes:', error)
+    res.status(500).json({ mensaje: 'Error al obtener los tatuajes' })
   }
 })
 
@@ -396,22 +386,22 @@ router.post('/:id/guardar', verificarAutenticacion, async (req, res) => {
     const idUsuario = req.session.usuario.id_usuario
 
     // Verificar si ya está guardado
-    const [guardados] = await pool.query(
-      'SELECT * FROM guardados WHERE id_tatuaje = ? AND id_usuario = ?',
+    const { rows: guardados } = await pool.query(
+      'SELECT * FROM guardados WHERE id_tatuaje = $1 AND id_usuario = $2',
       [id, idUsuario]
     )
 
     if (guardados.length > 0) {
       // Si ya está guardado, lo quitamos
       await pool.query(
-        'DELETE FROM guardados WHERE id_tatuaje = ? AND id_usuario = ?',
+        'DELETE FROM guardados WHERE id_tatuaje = $1 AND id_usuario = $2',
         [id, idUsuario]
       )
       res.json({ guardado: false })
     } else {
       // Si no está guardado, lo agregamos
       await pool.query(
-        'INSERT INTO guardados (id_tatuaje, id_usuario) VALUES (?, ?)',
+        'INSERT INTO guardados (id_tatuaje, id_usuario) VALUES ($1, $2)',
         [id, idUsuario]
       )
       res.json({ guardado: true })
@@ -440,17 +430,17 @@ router.delete('/:id', verificarAutenticacion, async (req, res) => {
 
       // 1. Registrar el reporte de eliminación por admin
       await connection.query(
-        'INSERT INTO reportes (id_tatuaje, id_admin, razon) VALUES (?, ?, ?)',
+        'INSERT INTO reportes (id_tatuaje, id_admin, razon) VALUES ($1, $2, $3)',
         [idTatuaje, id_usuario, razon]
       )
 
       // 2. Eliminar el tatuaje
-      const [result] = await connection.query(
-        'DELETE FROM tatuajes WHERE id_tatuaje = ?',
+      const { rows: result } = await connection.query(
+        'DELETE FROM tatuajes WHERE id_tatuaje = $1 RETURNING id_tatuaje',
         [idTatuaje]
       )
 
-      if (result.affectedRows === 0) {
+      if (result.length === 0) {
         throw new Error('No se encontró el tatuaje a eliminar.')
       }
 
@@ -458,8 +448,8 @@ router.delete('/:id', verificarAutenticacion, async (req, res) => {
       res.json({ exito: true, mensaje: 'Publicación eliminada y reporte registrado correctamente.' })
     } else if (rol === 'tatuador') {
       // Verificar que el tatuaje pertenece al tatuador
-      const [tatuaje] = await connection.query(
-        'SELECT * FROM tatuajes WHERE id_tatuaje = ? AND id_tatuador = ?',
+      const { rows: tatuaje } = await connection.query(
+        'SELECT * FROM tatuajes WHERE id_tatuaje = $1 AND id_tatuador = $2',
         [idTatuaje, id_tatuador]
       )
 
@@ -469,7 +459,7 @@ router.delete('/:id', verificarAutenticacion, async (req, res) => {
       }
 
       // Eliminar el tatuaje
-      await connection.query('DELETE FROM tatuajes WHERE id_tatuaje = ?', [idTatuaje])
+      await connection.query('DELETE FROM tatuajes WHERE id_tatuaje = $1', [idTatuaje])
 
       await connection.commit()
       res.json({ exito: true, mensaje: 'Tatuaje eliminado correctamente.' })
@@ -835,7 +825,7 @@ router.get('/:id', async (req, res) => {
 
   try {
     connection = await pool.getConnection()
-    const [tatuaje] = await connection.query(`
+    const { rows: tatuaje } = await connection.query(`
             SELECT t.id_tatuaje, t.id_tatuador, t.titulo, t.descripcion, t.fecha_subida, t.imagen,
                    u.nombre as nombre_tatuador,
                    COALESCE(AVG(ct.puntuacion), 0) as promedio_votos,
@@ -846,17 +836,17 @@ router.get('/:id', async (req, res) => {
             JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
             JOIN usuarios u ON ta.id_usuario = u.id_usuario
             LEFT JOIN comentarios_tatuajes ct ON t.id_tatuaje = ct.id_tatuaje
-            WHERE t.id_tatuaje = ?
+            WHERE t.id_tatuaje = $1
         `, [id])
 
     if (tatuaje.length === 0) {
       return res.status(404).json({ mensaje: 'Tatuaje no encontrado' })
     }
 
-    const [imagenesSecundarias] = await connection.query(`
+    const { rows: imagenesSecundarias } = await connection.query(`
             SELECT url_imagen
             FROM imagenes_tatuaje
-            WHERE id_tatuaje = ? AND es_principal = 0
+            WHERE id_tatuaje = $1 AND es_principal = false
         `, [id])
 
     const urlsSecundarias = imagenesSecundarias.map(img => `/uploads/${img.url_imagen.replace(/\\/g, '/')}`)
