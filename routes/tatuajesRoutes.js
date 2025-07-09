@@ -637,7 +637,7 @@ router.get('/mas-votadas-semana', async (req, res) => {
     unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
     const fechaISO = unaSemanaAtras.toISOString().slice(0, 19).replace('T', ' ');
 
-    const [publicaciones] = await pool.query(
+    const { rows: publicaciones } = await pool.query(
       `SELECT 
           t.id_tatuaje, 
           t.id_tatuador,
@@ -677,7 +677,7 @@ router.get('/mas-votadas-semana', async (req, res) => {
     // Notificar a los usuarios cuyos tatuajes están en destacados
     for (const t of publicaciones) {
       // Buscar el id_usuario del tatuador
-      const [tatuador] = await pool.query(
+      const { rows: tatuador } = await pool.query(
         'SELECT ta.id_usuario FROM tatuadores ta WHERE ta.id_tatuador = $1',
         [t.id_tatuador]
       );
@@ -699,12 +699,12 @@ router.get('/mas-votadas-semana', async (req, res) => {
 router.get('/todas', async (req, res) => {
   try {
     // Primero, obtener todas las publicaciones con su imagen principal
-    const [publicaciones] = await pool.query(
+    const { rows: publicaciones } = await pool.query(
             `SELECT 
                 t.id_tatuaje, 
                 t.titulo, 
                 t.descripcion, 
-                CONCAT('/uploads/', REPLACE(t.imagen, '\\\\', '/')) AS imagen_url, 
+                '/uploads/' || replace(t.imagen, '\\', '/') AS imagen_url, 
                 u.nombre AS nombre_tatuador,
                 COALESCE(v.promedio_votos, 0) AS promedio_votos,
                 COALESCE(g.total_guardados, 0) AS total_guardados,
@@ -733,8 +733,8 @@ router.get('/todas', async (req, res) => {
 
     // Luego, para cada publicación, obtener sus imágenes secundarias
     for (const pub of publicaciones) {
-      const [imagenesSecundarias] = await pool.query(
-        "SELECT CONCAT('/uploads/', REPLACE(url_imagen, '\\\\', '/')) AS url FROM imagenes_tatuaje WHERE id_tatuaje = ? AND es_principal = 0",
+      const { rows: imagenesSecundarias } = await pool.query(
+        "SELECT '/uploads/' || replace(url_imagen, '\\', '/') AS url FROM imagenes_tatuaje WHERE id_tatuaje = $1 AND es_principal = false",
         [pub.id_tatuaje]
       )
       pub.imagenes_secundarias = imagenesSecundarias.map(img => img.url)
