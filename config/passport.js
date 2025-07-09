@@ -27,12 +27,12 @@ passport.deserializeUser(async (id, done) => {
 
   try {
     // Buscar usuario por id_usuario y obtener su id_tatuador si existe
-    const [rows] = await db.promise().query(
-            `SELECT u.*, t.id_tatuador 
-             FROM usuarios u 
-             LEFT JOIN tatuadores t ON u.id_usuario = t.id_usuario 
-             WHERE u.id_usuario = ?`,
-            [id]
+    const { rows } = await db.query(
+      `SELECT u.*, t.id_tatuador 
+       FROM usuarios u 
+       LEFT JOIN tatuadores t ON u.id_usuario = t.id_usuario 
+       WHERE u.id_usuario = $1`,
+      [id]
     )
 
     if (rows.length > 0) {
@@ -64,29 +64,23 @@ async function (accessToken, refreshToken, profile, done) {
     const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null
     const imageUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null
 
-    const [existingUsers] = await db.promise().query('SELECT * FROM usuarios WHERE googleId = ?', [googleId])
+    const { rows: existingUsers } = await db.query('SELECT * FROM usuarios WHERE googleId = $1', [googleId])
 
     if (existingUsers.length > 0) {
       const user = existingUsers[0]
       console.log('DEBUG: Usuario existente encontrado:', user.nombre)
-      await db.promise().query(
-        'UPDATE usuarios SET nombre = ?, correo = ?, imagen_perfil = ? WHERE googleId = ?',
+      await db.query(
+        'UPDATE usuarios SET nombre = $1, correo = $2, imagen_perfil = $3 WHERE googleId = $4',
         [displayName, email, imageUrl, googleId]
       )
       return done(null, { ...user, googleId })
     } else {
       console.log('DEBUG: Creando nuevo usuario:', displayName)
-      const [result] = await db.promise().query(
-        'INSERT INTO usuarios (googleId, nombre, correo, imagen_perfil) VALUES (?, ?, ?, ?)',
+      const result = await db.query(
+        'INSERT INTO usuarios (googleId, nombre, correo, imagen_perfil) VALUES ($1, $2, $3, $4) RETURNING *',
         [googleId, displayName, email, imageUrl]
       )
-      const newUser = {
-        id_usuario: result.insertId,
-        googleId,
-        nombre: displayName,
-        correo: email,
-        imagen_perfil: imageUrl
-      }
+      const newUser = result.rows[0]
       return done(null, newUser)
     }
   } catch (error) {
@@ -106,8 +100,8 @@ passport.use(new LocalStrategy({
 
     // Buscar usuario por correo
     console.log('DEBUG: Ejecutando consulta SQL...')
-    const [usuarios] = await db.promise().query(
-      'SELECT * FROM usuarios WHERE correo = ?',
+    const { rows: usuarios } = await db.query(
+      'SELECT * FROM usuarios WHERE correo = $1',
       [correo]
     )
     console.log('DEBUG: Resultado de la consulta:', usuarios.length > 0 ? 'Usuario encontrado' : 'Usuario no encontrado')
