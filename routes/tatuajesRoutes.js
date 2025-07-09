@@ -643,7 +643,7 @@ router.get('/mas-votadas-semana', async (req, res) => {
           t.id_tatuador,
           t.titulo, 
           t.descripcion, 
-          CONCAT('/uploads/', REPLACE(t.imagen, '\\\\', '/')) AS imagen_url,
+          '/uploads/' || replace(t.imagen, '\\', '/') AS imagen_url,
           u.nombre AS nombre_tatuador,
           COALESCE(v.promedio_votos, 0) AS promedio_votos,
           COALESCE(g.total_guardados, 0) AS total_guardados,
@@ -655,7 +655,7 @@ router.get('/mas-votadas-semana', async (req, res) => {
       LEFT JOIN (
           SELECT id_tatuaje, AVG(puntuacion) AS promedio_votos
           FROM comentarios_tatuajes
-          WHERE fecha >= ?
+          WHERE fecha >= $1
           GROUP BY id_tatuaje
       ) v ON t.id_tatuaje = v.id_tatuaje
       LEFT JOIN (
@@ -678,7 +678,7 @@ router.get('/mas-votadas-semana', async (req, res) => {
     for (const t of publicaciones) {
       // Buscar el id_usuario del tatuador
       const [tatuador] = await pool.query(
-        'SELECT ta.id_usuario FROM tatuadores ta WHERE ta.id_tatuador = ?',
+        'SELECT ta.id_usuario FROM tatuadores ta WHERE ta.id_tatuador = $1',
         [t.id_tatuador]
       );
       if (tatuador.length > 0) {
