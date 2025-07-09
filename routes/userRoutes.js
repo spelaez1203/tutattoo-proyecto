@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const db = require('../db/conexion')
+const pool = require('../database/connection')
 const { verificarAutenticacion } = require('../middlewares/authMiddleware')
 const { getIdTatuador } = require('../controllers/userController')
 
@@ -9,13 +9,13 @@ router.get('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
   const { id_usuario } = req.params
 
   try {
-    const [rows] = await db.query('SELECT * FROM perfil_usuario WHERE id_usuario = ?', [id_usuario])
+    const [rows] = await pool.query('SELECT * FROM perfil_usuario WHERE id_usuario = ?', [id_usuario])
 
     let perfil = rows[0] || { descripcion: '', instagram: '', tiktok: '', youtube: '', twitter: '', url_imagen: '' }
 
     // Si no hay imagen en perfil_usuario, buscar en usuarios
     if (!perfil.url_imagen) {
-      const [usuarios] = await db.query('SELECT imagen_perfil FROM usuarios WHERE id_usuario = ?', [id_usuario])
+      const [usuarios] = await pool.query('SELECT imagen_perfil FROM usuarios WHERE id_usuario = ?', [id_usuario])
       if (usuarios.length > 0 && usuarios[0].imagen_perfil) {
         perfil.url_imagen = usuarios[0].imagen_perfil
       }
@@ -42,7 +42,7 @@ router.post('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
 
   let connection
   try {
-    connection = await db.getConnection()
+    connection = await pool.getConnection()
     await connection.beginTransaction()
 
     if (nombre) {
@@ -81,7 +81,7 @@ router.delete('/:id_usuario/eliminar', verificarAutenticacion, async (req, res) 
   }
   let connection
   try {
-    connection = await db.getConnection()
+    connection = await pool.getConnection()
     await connection.beginTransaction()
 
     // Eliminar datos relacionados (comentarios, guardados, perfil, etc.)

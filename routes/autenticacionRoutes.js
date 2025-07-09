@@ -239,7 +239,7 @@ router.post('/logout', async (req, res) => {
 
 router.post('/registro', async (req, res) => {
   const { nombre, correo, contrasena } = req.body;
-  const db = require('../db/conexion');
+  const pool = require('../database/connection');
   const bcrypt = require('bcrypt');
 
   if (!nombre || !correo || !contrasena) {
@@ -248,7 +248,7 @@ router.post('/registro', async (req, res) => {
 
   try {
     // Verificar si ya existe el correo
-    const [usuarios] = await db.query('SELECT * FROM usuarios WHERE correo = ?', [correo]);
+    const { rows: usuarios } = await pool.query('SELECT * FROM usuarios WHERE correo = $1', [correo]);
     if (usuarios.length > 0) {
       return res.json({ exito: false, mensaje: 'Este correo ya está registrado' });
     }
@@ -257,8 +257,8 @@ router.post('/registro', async (req, res) => {
     const hash = await bcrypt.hash(contrasena, 10);
 
     // Insertar en la base de datos
-    await db.query(
-      'INSERT INTO usuarios (nombre, correo, contraseña) VALUES (?, ?, ?)',
+    await pool.query(
+      'INSERT INTO usuarios (nombre, correo, contraseña) VALUES ($1, $2, $3)',
       [nombre, correo, hash]
     );
 

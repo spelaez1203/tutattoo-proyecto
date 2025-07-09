@@ -1,5 +1,5 @@
 const path = require('path')
-const connection = require('../db/connection')
+const pool = require('../database/connection')
 const multer = require('multer')
 const fs = require('fs')
 
@@ -29,7 +29,7 @@ const crearLocal = (req, res) => {
 
   // Insertar local
   const sql = 'INSERT INTO locales (id_tatuador, nombre, direccion, telefono, imagen_fachada) VALUES (?, ?, ?, ?, ?)'
-  connection.query(sql, [id_tatuador, nombre, direccion, telefono, fachada], (err, result) => {
+  pool.query(sql, [id_tatuador, nombre, direccion, telefono, fachada], (err, result) => {
     if (err) {
       console.error('Error al insertar local:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al registrar el local.' })
@@ -38,7 +38,7 @@ const crearLocal = (req, res) => {
     // Guardar imágenes de interior si existen
     if (imagenesInterior.length > 0) {
       const values = imagenesInterior.map(img => [id_local, img])
-      connection.query('INSERT INTO imagenes_local (id_local, url_imagen) VALUES ?', [values], (err2) => {
+      pool.query('INSERT INTO imagenes_local (id_local, url_imagen) VALUES ?', [values], (err2) => {
         if (err2) {
           console.error('Error al guardar imágenes de interior:', err2)
         }
@@ -55,7 +55,7 @@ const obtenerEstadoLocal = (req, res) => {
     return res.status(400).json({ exito: false, mensaje: 'Falta el id_tatuador.' })
   }
   const sql = 'SELECT estado FROM locales WHERE id_tatuador = ? ORDER BY id_local DESC LIMIT 1'
-  connection.query(sql, [id_tatuador], (err, results) => {
+  pool.query(sql, [id_tatuador], (err, results) => {
     if (err) {
       console.error('Error al consultar el estado del local:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al consultar el estado del local.' })
@@ -77,7 +77,7 @@ const obtenerSolicitudesLocales = (req, res) => {
     LEFT JOIN usuarios u ON t.id_usuario = u.id_usuario
     ORDER BY l.estado = 'pendiente' DESC, l.id_local DESC
   `
-  connection.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       console.error('Error al obtener solicitudes de locales:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener solicitudes de locales.' })
@@ -98,7 +98,7 @@ const actualizarEstadoLocal = (req, res) => {
     ? 'UPDATE locales SET estado = ?, comentario_admin = ? WHERE id_local = ?'
     : 'UPDATE locales SET estado = ? WHERE id_local = ?'
   const params = comentario ? [estado, comentario, id_local] : [estado, id_local]
-  connection.query(sql, params, (err, result) => {
+  pool.query(sql, params, (err, result) => {
     if (err) {
       console.error('Error al actualizar estado del local:', err)
       return res.status(500).json({ exito: false, mensaje: 'Error al actualizar estado del local.' })
@@ -114,7 +114,7 @@ const obtenerImagenesLocal = (req, res) => {
     return res.status(400).json({ exito: false, mensaje: 'Falta el id_local.' });
   }
   const sql = 'SELECT url_imagen FROM imagenes_local WHERE id_local = ?';
-  connection.query(sql, [id_local], (err, results) => {
+  pool.query(sql, [id_local], (err, results) => {
     if (err) {
       console.error('Error al obtener imágenes del local:', err);
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener imágenes del local.' });
@@ -134,7 +134,7 @@ const obtenerLocalesAprobados = (req, res) => {
     WHERE l.estado = 'aprobado'
     ORDER BY l.id_local DESC
   `;
-  connection.query(sql, (err, results) => {
+  pool.query(sql, (err, results) => {
     if (err) {
       console.error('Error al obtener locales aprobados:', err);
       return res.status(500).json({ exito: false, mensaje: 'Error al obtener locales.' });
