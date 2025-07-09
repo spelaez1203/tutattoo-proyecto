@@ -10,6 +10,42 @@ const PORT = process.env.PORT || 3000
 require('dotenv').config()
 const helmet = require('helmet')
 
+// Función para crear la tabla perfil_usuario si no existe
+async function crearTablaPerfilUsuario() {
+  try {
+    const createTableSQL = `
+      CREATE TABLE IF NOT EXISTS perfil_usuario (
+        id_perfil SERIAL PRIMARY KEY,
+        id_usuario INTEGER NOT NULL,
+        descripcion TEXT,
+        instagram VARCHAR(255),
+        tiktok VARCHAR(255),
+        youtube VARCHAR(255),
+        twitter VARCHAR(255),
+        url_imagen VARCHAR(255),
+        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+        UNIQUE(id_usuario)
+      );
+    `;
+    
+    await pool.query(createTableSQL);
+    console.log('✅ Tabla perfil_usuario verificada/creada');
+    
+    // Crear índice si no existe
+    const createIndexSQL = `
+      CREATE INDEX IF NOT EXISTS idx_perfil_usuario_id_usuario ON perfil_usuario(id_usuario);
+    `;
+    
+    await pool.query(createIndexSQL);
+    console.log('✅ Índice de perfil_usuario verificado/creado');
+    
+  } catch (error) {
+    console.error('❌ Error al crear tabla perfil_usuario:', error);
+  }
+}
+
 // Middleware unificado para Content Security Policy
 const cspDirectives = {
   directives: {
@@ -246,7 +282,12 @@ directoriosEstaticos.forEach(dir => {
   })
 })
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en http://localhost:${PORT}`)
+// Crear tabla perfil_usuario si no existe y luego iniciar el servidor
+crearTablaPerfilUsuario().then(() => {
+  app.listen(PORT, () => {
+    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`)
+  })
+}).catch(error => {
+  console.error('❌ Error al inicializar el servidor:', error)
+  process.exit(1)
 })

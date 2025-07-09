@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const respuesta = await fetch(`/api/users/${usuarioActual.id_usuario}/perfil`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
