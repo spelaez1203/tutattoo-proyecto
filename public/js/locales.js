@@ -16,8 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
         data.locales.forEach((local, idx) => {
           const card = document.createElement('div');
           card.className = 'local-card';
+          
+          // Validar si hay imagen de fachada
+          const imagenFachada = local.imagen_fachada && local.imagen_fachada !== 'null' 
+            ? `/uploads/locales/${local.imagen_fachada}` 
+            : '/img/image.png';
+          
           card.innerHTML = `
-            <img src="/uploads/locales/${local.imagen_fachada}" alt="Fachada de ${local.nombre}" class="local-fachada">
+            <img src="${imagenFachada}" alt="Fachada de ${local.nombre}" class="local-fachada" onerror="this.src='/img/image.png'">
             <h3>${local.nombre}</h3>
             <p><strong>Dirección:</strong> ${local.direccion}</p>
             <p><strong>Tatuador:</strong> ${local.nombre_tatuador || ''}</p>
@@ -38,17 +44,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/locales-publicos');
       const data = await res.json();
       const local = data.locales.find(l => l.id_local == id);
+      
       // Buscar imágenes interiores
       const resImg = await fetch(`/api/locales/${id}/imagenes`);
       const dataImg = await resImg.json();
       let imagenes = '';
       if (dataImg.exito && dataImg.imagenes.length > 0) {
         imagenes = '<div class="interiores"><strong>Imágenes interiores:</strong><br>' +
-          dataImg.imagenes.map(img => `<img src="/uploads/locales/${img.url_imagen}" class="img-interior">`).join('') + '</div>';
+          dataImg.imagenes.map(img => `<img src="/uploads/locales/${img.url_imagen}" class="img-interior" onerror="this.src='/img/image.png'">`).join('') + '</div>';
       }
+      
+      // Validar si hay imagen de fachada para el modal
+      const imagenFachadaModal = local.imagen_fachada && local.imagen_fachada !== 'null' 
+        ? `/uploads/locales/${local.imagen_fachada}` 
+        : '/img/image.png';
+      
       modalContent.innerHTML = `
         <h2>${local.nombre}</h2>
-        <img src="/uploads/locales/${local.imagen_fachada}" alt="Fachada" class="fachada-modal">
+        <img src="${imagenFachadaModal}" alt="Fachada" class="fachada-modal" onerror="this.src='/img/image.png'">
         <p><strong>Dirección:</strong> ${local.direccion}</p>
         <p><strong>Teléfono:</strong> ${local.telefono}</p>
         <p><strong>Tatuador:</strong> ${local.nombre_tatuador || ''}</p>
