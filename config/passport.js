@@ -66,20 +66,20 @@ async function (accessToken, refreshToken, profile, done) {
     const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null
     const imageUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null
 
-    const { rows: existingUsers } = await db.query('SELECT * FROM usuarios WHERE googleId = $1', [googleId])
+    const { rows: existingUsers } = await db.query('SELECT * FROM usuarios WHERE "googleId" = $1', [googleId])
 
     if (existingUsers.length > 0) {
       const user = existingUsers[0]
       console.log('DEBUG: Usuario existente encontrado:', user.nombre)
       await db.query(
-        'UPDATE usuarios SET nombre = $1, correo = $2, imagen_perfil = $3 WHERE googleId = $4',
+        'UPDATE usuarios SET nombre = $1, correo = $2, imagen_perfil = $3 WHERE "googleId" = $4',
         [displayName, email, imageUrl, googleId]
       )
       return done(null, { ...user, googleId })
     } else {
       console.log('DEBUG: Creando nuevo usuario:', displayName)
       const result = await db.query(
-        'INSERT INTO usuarios (googleId, nombre, correo, imagen_perfil) VALUES ($1, $2, $3, $4) RETURNING *',
+        'INSERT INTO usuarios ("googleId", nombre, correo, imagen_perfil) VALUES ($1, $2, $3, $4) RETURNING *',
         [googleId, displayName, email, imageUrl]
       )
       const newUser = result.rows[0]
