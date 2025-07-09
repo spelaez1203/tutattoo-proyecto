@@ -82,7 +82,7 @@ app.use(express.urlencoded({ extended: true }))
 // Configuración de la sesión
 const sessionStore = new pgSession({
   pool: pool,
-  tableName: 'sessions'
+  tableName: 'session' // <--- Cambiado a 'session' sin la s
 })
 
 app.use(session({
