@@ -126,6 +126,12 @@ passport.use(new LocalStrategy({
       return done(null, false, { message: 'Esta cuenta está asociada a Google. Por favor, use el inicio de sesión con Google.' })
     }
 
+    // Verificar que el usuario tenga contraseña
+    if (!usuario.contraseña) {
+      console.log('DEBUG: Usuario sin contraseña, probablemente creado por Google');
+      return done(null, false, { message: 'Esta cuenta no tiene contraseña. Usa el login con Google.' });
+    }
+
     // Verificar contraseña
     console.log('DEBUG: Verificando contraseña...')
     const contrasenaValida = await bcrypt.compare(contrasena, usuario.contraseña)
