@@ -1,13 +1,16 @@
-const mysql = require('mysql2/promise')
+const { Pool } = require('pg')
+require('dotenv').config()
 
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '0000',
-  database: 'tutattoo_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+const pool = new Pool({
+  host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+  user: process.env.PGUSER || process.env.DB_USER || 'root',
+  password: process.env.PGPASSWORD || process.env.DB_PASSWORD || '',
+  database: process.env.PGDATABASE || process.env.DB_NAME || 'tutattoo_db',
+  port: process.env.PGPORT || process.env.DB_PORT || 5432,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
 })
 
 module.exports = pool

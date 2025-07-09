@@ -1,11 +1,11 @@
-const db = require('../db/conexion')
+const pool = require('../database/connection')
 
 // Obtener notificaciones de un usuario
 exports.obtenerNotificaciones = async (req, res) => {
   const id_usuario = req.params.id_usuario
   try {
-    const [notificaciones] = await db.promise().query(
-      'SELECT * FROM notificaciones WHERE id_usuario = ? ORDER BY fecha DESC',
+    const { rows: notificaciones } = await pool.query(
+      'SELECT * FROM notificaciones WHERE id_usuario = $1 ORDER BY fecha DESC',
       [id_usuario]
     )
     res.json({ exito: true, notificaciones })
@@ -18,8 +18,8 @@ exports.obtenerNotificaciones = async (req, res) => {
 // Crear una notificación
 exports.crearNotificacion = async (id_usuario, tipo, mensaje) => {
   try {
-    await db.promise().query(
-      'INSERT INTO notificaciones (id_usuario, tipo, mensaje) VALUES (?, ?, ?)',
+    await pool.query(
+      'INSERT INTO notificaciones (id_usuario, tipo, mensaje) VALUES ($1, $2, $3)',
       [id_usuario, tipo, mensaje]
     )
   } catch (error) {
@@ -31,8 +31,8 @@ exports.crearNotificacion = async (id_usuario, tipo, mensaje) => {
 exports.marcarComoLeida = async (req, res) => {
   const id_notificacion = req.params.id_notificacion
   try {
-    await db.promise().query(
-      'UPDATE notificaciones SET leida = 1 WHERE id_notificacion = ?',
+    await pool.query(
+      'UPDATE notificaciones SET leida = true WHERE id_notificacion = $1',
       [id_notificacion]
     )
     res.json({ exito: true })
