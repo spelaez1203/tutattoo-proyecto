@@ -9,13 +9,13 @@ router.get('/:id_usuario/perfil', verificarAutenticacion, async (req, res) => {
   const { id_usuario } = req.params
 
   try {
-    const [rows] = await pool.query('SELECT * FROM perfil_usuario WHERE id_usuario = ?', [id_usuario])
+    const { rows } = await pool.query('SELECT * FROM perfil_usuario WHERE id_usuario = $1', [id_usuario])
 
     let perfil = rows[0] || { descripcion: '', instagram: '', tiktok: '', youtube: '', twitter: '', url_imagen: '' }
 
     // Si no hay imagen en perfil_usuario, buscar en usuarios
     if (!perfil.url_imagen) {
-      const [usuarios] = await pool.query('SELECT imagen_perfil FROM usuarios WHERE id_usuario = ?', [id_usuario])
+      const { rows: usuarios } = await pool.query('SELECT imagen_perfil FROM usuarios WHERE id_usuario = $1', [id_usuario])
       if (usuarios.length > 0 && usuarios[0].imagen_perfil) {
         perfil.url_imagen = usuarios[0].imagen_perfil
       }

@@ -292,38 +292,38 @@ router.get('/publicaciones', verificarAutenticacion, verificarRolTatuador, verif
 // Obtener tatuajes guardados del usuario
 router.get('/guardados', verificarAutenticacion, async (req, res) => {
   try {
-    const [tatuajes] = await pool.query(
-            `SELECT 
-                t.id_tatuaje, 
-                t.titulo, 
-                t.descripcion, 
-                CONCAT('/uploads/', REPLACE(t.imagen, '\\\\', '/')) AS imagen_url,
-                u.nombre AS nombre_tatuador,
-                COALESCE(v.promedio_votos, 0) AS promedio_votos,
-                COALESCE(g.total_guardados, 0) AS total_guardados,
-                COALESCE(cm.total_comentarios, 0) AS total_comentarios,
-                (COALESCE(v.promedio_votos, 0) * 0.7 + COALESCE(g.total_guardados, 0) * 0.3) AS promedio_final
-            FROM guardados gt
-            JOIN tatuajes t ON gt.id_tatuaje = t.id_tatuaje
-            JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
-            JOIN usuarios u ON ta.id_usuario = u.id_usuario
-            LEFT JOIN (
-                SELECT id_tatuaje, AVG(puntuacion) AS promedio_votos
-                FROM comentarios_tatuajes
-                GROUP BY id_tatuaje
-            ) v ON t.id_tatuaje = v.id_tatuaje
-            LEFT JOIN (
-                SELECT id_tatuaje, COUNT(*) AS total_guardados
-                FROM guardados
-                GROUP BY id_tatuaje
-            ) g ON t.id_tatuaje = g.id_tatuaje
-            LEFT JOIN (
-                SELECT id_tatuaje, COUNT(*) AS total_comentarios
-                FROM comentarios_tatuajes
-                GROUP BY id_tatuaje
-            ) cm ON t.id_tatuaje = cm.id_tatuaje
-            WHERE gt.id_usuario = ?`,
-            [req.session.usuario.id_usuario]
+    const { rows: tatuajes } = await pool.query(
+      `SELECT 
+          t.id_tatuaje, 
+          t.titulo, 
+          t.descripcion, 
+          '/uploads/' || replace(t.imagen, '\\', '/') AS imagen_url,
+          u.nombre AS nombre_tatuador,
+          COALESCE(v.promedio_votos, 0) AS promedio_votos,
+          COALESCE(g.total_guardados, 0) AS total_guardados,
+          COALESCE(cm.total_comentarios, 0) AS total_comentarios,
+          (COALESCE(v.promedio_votos, 0) * 0.7 + COALESCE(g.total_guardados, 0) * 0.3) AS promedio_final
+      FROM guardados gt
+      JOIN tatuajes t ON gt.id_tatuaje = t.id_tatuaje
+      JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
+      JOIN usuarios u ON ta.id_usuario = u.id_usuario
+      LEFT JOIN (
+          SELECT id_tatuaje, AVG(puntuacion) AS promedio_votos
+          FROM comentarios_tatuajes
+          GROUP BY id_tatuaje
+      ) v ON t.id_tatuaje = v.id_tatuaje
+      LEFT JOIN (
+          SELECT id_tatuaje, COUNT(*) AS total_guardados
+          FROM guardados
+          GROUP BY id_tatuaje
+      ) g ON t.id_tatuaje = g.id_tatuaje
+      LEFT JOIN (
+          SELECT id_tatuaje, COUNT(*) AS total_comentarios
+          FROM comentarios_tatuajes
+          GROUP BY id_tatuaje
+      ) cm ON t.id_tatuaje = cm.id_tatuaje
+      WHERE gt.id_usuario = $1`,
+      [req.session.usuario.id_usuario]
     )
     res.json(tatuajes)
   } catch (error) {
@@ -489,16 +489,20 @@ router.delete('/:id', verificarAutenticacion, async (req, res) => {
 // Obtener comentarios de un tatuaje
 router.get('/:id/comentarios', async (req, res) => {
   try {
-    const [comentarios] = await pool.query(
+    const { id } = req.params
+    const { rows: comentarios } = await pool.query(
             `SELECT 
-                ct.*, 
+                ct.id_comentario,
+                ct.comentario,
+                ct.puntuacion,
+                ct.fecha,
                 u.nombre AS nombre_usuario, 
                 u.imagen_perfil AS foto_perfil 
              FROM comentarios_tatuajes ct 
              JOIN usuarios u ON ct.id_usuario = u.id_usuario 
-             WHERE ct.id_tatuaje = ?
+             WHERE ct.id_tatuaje = $1
              ORDER BY ct.fecha DESC`,
-            [req.params.id]
+            [id]
     )
 
     res.json(comentarios || [])
@@ -513,9 +517,8 @@ router.get('/:id/comentarios-usuario', verificarAutenticacion, async (req, res) 
   try {
     const idTatuaje = req.params.id
     const idUsuario = req.session.usuario.id_usuario
-
-    const [comentarios] = await pool.query(
-      'SELECT * FROM comentarios_tatuajes WHERE id_tatuaje = ? AND id_usuario = ?',
+    const { rows: comentarios } = await pool.query(
+      'SELECT id_comentario FROM comentarios_tatuajes WHERE id_tatuaje = $1 AND id_usuario = $2',
       [idTatuaje, idUsuario]
     )
 
@@ -532,10 +535,9 @@ router.get('/:id/comentarios-usuario', verificarAutenticacion, async (req, res) 
 
 // Agregar comentario a un tatuaje
 router.post('/:id/comentar', verificarAutenticacion, async (req, res) => {
-  const connection = await pool.getConnection()
+  const client = await pool.connect()
   try {
-    await connection.beginTransaction()
-
+    await client.query('BEGIN')
     const { id } = req.params
     const { comentario, puntuacion } = req.body
     const idUsuario = req.session.usuario.id_usuario
@@ -549,35 +551,35 @@ router.post('/:id/comentar', verificarAutenticacion, async (req, res) => {
     }
 
     // Contar cuántos comentarios ya tiene el usuario en esta publicación
-    const [comentariosUsuario] = await connection.query(
-      'SELECT COUNT(*) as total FROM comentarios_tatuajes WHERE id_tatuaje = ? AND id_usuario = ?',
+    const { rows: comentariosUsuario } = await client.query(
+      'SELECT COUNT(*) as total FROM comentarios_tatuajes WHERE id_tatuaje = $1 AND id_usuario = $2',
       [id, idUsuario]
     )
 
-    const totalComentarios = comentariosUsuario[0].total
+    const totalComentarios = parseInt(comentariosUsuario[0].total, 10)
 
     if (totalComentarios >= 3) {
       throw new Error('Has alcanzado el límite de 3 comentarios para esta publicación')
     }
 
     // Crear un nuevo comentario
-    await connection.query(
-      'INSERT INTO comentarios_tatuajes (id_tatuaje, id_usuario, comentario, puntuacion, fecha) VALUES (?, ?, ?, ?, NOW())',
+    await client.query(
+      'INSERT INTO comentarios_tatuajes (id_tatuaje, id_usuario, comentario, puntuacion, fecha) VALUES ($1, $2, $3, $4, NOW())',
       [id, idUsuario, comentario.trim(), puntuacion]
     )
 
-    await connection.commit()
+    await client.query('COMMIT')
 
     res.json({
       mensaje: 'Comentario agregado exitosamente',
       comentariosRestantes: 3 - (totalComentarios + 1)
     })
   } catch (error) {
-    await connection.rollback()
+    await client.query('ROLLBACK')
     console.error('Error al comentar:', error)
     res.status(500).json({ mensaje: error.message || 'Error al agregar el comentario' })
   } finally {
-    connection.release()
+    client.release()
   }
 })
 
@@ -750,8 +752,8 @@ router.get('/todas', async (req, res) => {
 // Obtener el comentario de un usuario específico en un tatuaje para saber si ya comentó
 router.get('/:id/comentarios-usuario', verificarAutenticacion, async (req, res) => {
   try {
-    const [comentarios] = await pool.query(
-      'SELECT id_comentario FROM comentarios_tatuajes WHERE id_tatuaje = ? AND id_usuario = ?',
+    const { rows: comentarios } = await pool.query(
+      'SELECT id_comentario FROM comentarios_tatuajes WHERE id_tatuaje = $1 AND id_usuario = $2',
       [req.params.id, req.session.usuario.id_usuario]
     )
     res.json({ haComentado: comentarios.length > 0 })
@@ -766,7 +768,7 @@ router.get('/:id/comentarios', async (req, res) => {
   try {
     const { id } = req.params
 
-    const [comentarios] = await pool.query(`
+    const { rows: comentarios } = await pool.query(`
             SELECT 
                 ct.id_comentario,
                 ct.comentario,
@@ -776,7 +778,7 @@ router.get('/:id/comentarios', async (req, res) => {
                 u.imagen_perfil
             FROM comentarios_tatuajes ct
             JOIN usuarios u ON ct.id_usuario = u.id_usuario
-            WHERE ct.id_tatuaje = ?
+            WHERE ct.id_tatuaje = $1
             ORDER BY ct.fecha DESC
         `, [id])
 
@@ -793,8 +795,8 @@ router.get('/:id/guardado', verificarAutenticacion, async (req, res) => {
     const { id } = req.params
     const idUsuario = req.session.usuario.id_usuario
 
-    const [guardados] = await pool.query(
-      'SELECT * FROM guardados WHERE id_tatuaje = ? AND id_usuario = ?',
+    const { rows: guardados } = await pool.query(
+      'SELECT * FROM guardados WHERE id_tatuaje = $1 AND id_usuario = $2',
       [id, idUsuario]
     )
 
@@ -811,8 +813,8 @@ router.get('/:id/estado-guardado', verificarAutenticacion, async (req, res) => {
   const id_usuario = req.session.usuario.id_usuario
 
   try {
-    const [rows] = await pool.query(
-      'SELECT * FROM guardados WHERE id_usuario = ? AND id_tatuaje = ?',
+    const { rows } = await pool.query(
+      'SELECT * FROM guardados WHERE id_usuario = $1 AND id_tatuaje = $2',
       [id_usuario, id_tatuaje]
     )
 
@@ -880,8 +882,8 @@ router.get('/:id', async (req, res) => {
 // Ruta para obtener las imágenes secundarias de un tatuaje
 router.get('/:id/imagenes', async (req, res) => {
   try {
-    const [imagenes] = await pool.query(
-      "SELECT CONCAT('/uploads/', REPLACE(url_imagen, '\\\\', '/')) AS url FROM imagenes_tatuaje WHERE id_tatuaje = ? AND es_principal = 0",
+    const { rows: imagenes } = await pool.query(
+      "SELECT CONCAT('/uploads/', REPLACE(url_imagen, '\\\\', '/')) AS url FROM imagenes_tatuaje WHERE id_tatuaje = $1 AND es_principal = 0",
       [req.params.id]
     )
     res.json({ exito: true, imagenes })
