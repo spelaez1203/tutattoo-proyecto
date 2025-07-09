@@ -592,12 +592,12 @@ router.get('/:id/recomendaciones', async (req, res) => {
     }
 
     // Primero obtenemos el tatuaje actual para saber el tatuador
-    const [tatuajeActual] = await pool.query(
-            `SELECT t.id_tatuador, ta.id_usuario
-             FROM tatuajes t
-             JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
-             WHERE t.id_tatuaje = ?`,
-            [tatuajeId]
+    const { rows: tatuajeActual } = await pool.query(
+      `SELECT t.id_tatuador, ta.id_usuario
+       FROM tatuajes t
+       JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
+       WHERE t.id_tatuaje = $1`,
+      [tatuajeId]
     )
 
     if (!tatuajeActual || tatuajeActual.length === 0) {
@@ -607,16 +607,16 @@ router.get('/:id/recomendaciones', async (req, res) => {
     const idTatuador = tatuajeActual[0].id_tatuador
 
     // Obtenemos otros tatuajes del mismo artista
-    const [rows] = await pool.query(
-            `SELECT t.*, u.nombre as nombre_usuario
-             FROM tatuajes t
-             JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
-             JOIN usuarios u ON ta.id_usuario = u.id_usuario
-             WHERE t.id_tatuaje != ?
-             AND t.id_tatuador = ?
-             ORDER BY t.fecha_subida DESC
-             LIMIT 6`,
-            [tatuajeId, idTatuador]
+    const { rows } = await pool.query(
+      `SELECT t.*, u.nombre as nombre_usuario
+       FROM tatuajes t
+       JOIN tatuadores ta ON t.id_tatuador = ta.id_tatuador
+       JOIN usuarios u ON ta.id_usuario = u.id_usuario
+       WHERE t.id_tatuaje != $1
+       AND t.id_tatuador = $2
+       ORDER BY t.fecha_subida DESC
+       LIMIT 6`,
+      [tatuajeId, idTatuador]
     )
 
     const recomendaciones = rows.map(tatuaje => ({
@@ -624,7 +624,6 @@ router.get('/:id/recomendaciones', async (req, res) => {
       imagen_url: `/uploads/${tatuaje.imagen.replace(/\\/g, '/')}`
     }))
 
-    console.log('Recomendaciones encontradas con imagen_url:', recomendaciones)
     res.json(recomendaciones)
   } catch (error) {
     console.error('Error al obtener recomendaciones:', error)
@@ -883,7 +882,7 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/imagenes', async (req, res) => {
   try {
     const { rows: imagenes } = await pool.query(
-      "SELECT CONCAT('/uploads/', REPLACE(url_imagen, '\\\\', '/')) AS url FROM imagenes_tatuaje WHERE id_tatuaje = $1 AND es_principal = 0",
+      "SELECT '/uploads/' || replace(url_imagen, '\\', '/') AS url FROM imagenes_tatuaje WHERE id_tatuaje = $1 AND es_principal = false",
       [req.params.id]
     )
     res.json({ exito: true, imagenes })
